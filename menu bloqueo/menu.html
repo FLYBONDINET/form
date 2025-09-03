@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menú Principal</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .menu-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    text-align: center;
+    width: 320px;
+  }
+  h2 {
+    margin-bottom: 20px;
+  }
+  p {
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    background: #142f61;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover {
+    background: #0b1b3a;
+  }
+</style>
+</head>
+<body>
+  <div class="menu-box">
+    <h2>Bienvenido</h2>
+    <p id="usuario"></p>
+    <button onclick="alert('Opción 1 seleccionada')">Opción 1</button>
+    <button onclick="alert('Opción 2 seleccionada')">Opción 2</button>
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+
+<script>
+  const usuario = sessionStorage.getItem("usuario");
+  if(!usuario){
+    window.location.href = "index.html"; // Si no hay sesión, volver al login
+  } else {
+    document.getElementById("usuario").textContent = "Usuario: " + usuario;
+  }
+
+  function cerrarSesion(){
+    sessionStorage.clear(); // Limpia todo
+    window.location.href = "index.html";
+  }
+</script>
+</body>
+</html>
