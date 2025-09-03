@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login con Google</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<title>Login con Mail y Legajo</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -25,9 +24,6 @@
   }
   h2 {
     margin-bottom: 20px;
-  }
-  #legajo-container {
-    margin-top: 15px;
   }
   input {
     padding: 10px;
@@ -61,73 +57,46 @@
   <div class="login-box">
     <h2>Ingresar</h2>
 
-    <!-- Botón de Google -->
-    <div id="g_id_onload"
-         data-client_id="234440818053-4jee2n6av03jtcfr0ga3i4gjvlgb7b4m.apps.googleusercontent.com"
-         data-context="signin"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
-    </div>
-    <div class="g_id_signin" data-type="standard"></div>
-
-    <!-- Campo de legajo -->
-    <div id="legajo-container" style="display:none;">
-      <input type="text" id="legajo" placeholder="Número de legajo">
-      <button onclick="enviarDatos()">Ingresar</button>
-      <div id="errorMsg"></div>
-    </div>
+    <!-- Campos manuales -->
+    <input type="email" id="mail" placeholder="Correo electrónico">
+    <input type="text" id="legajo" placeholder="Número de legajo">
+    <button onclick="enviarDatos()">Ingresar</button>
+    <div id="errorMsg"></div>
   </div>
 
 <script>
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbwyaW3eQhylczBO_RQShY76qsJ94S38jkizGXs5vW1G3sJSSd4wVk4aC3a4op9-ih6e/exec"; 
-let userEmail = "";
+  // URL del WebApp de Google Apps Script
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzvDuNE2RgEg98g3lNFHiBHHe2o7-zYPEwZu1_vjOt4DvtaM_hzzIZfkZD8xeDgxvPB/exec";
 
-// Google devuelve el Gmail autenticado
-function handleCredentialResponse(response) {
-  const data = JSON.parse(atob(response.credential.split('.')[1]));
-  userEmail = data.email;
+  function enviarDatos(){
+    const mail = document.getElementById("mail").value.trim();
+    const legajo = document.getElementById("legajo").value.trim();
+    const errorMsg = document.getElementById("errorMsg");
 
-  // 🔒 Solo permitir correos de un dominio específico
-  const dominioPermitido = "@flybondi.com"; // <-- cámbialo por tu dominio real
-  if (!userEmail.endsWith(dominioPermitido)) {
-    document.getElementById("errorMsg").textContent =
-      "Solo se permite acceso con correos del dominio " + dominioPermitido;
-    userEmail = "";
-    return;
-  }
-
-  document.getElementById("legajo-container").style.display = "block";
-}
-
-// Validar Gmail + legajo en Google Sheets
-function enviarDatos(){
-  const legajo = document.getElementById("legajo").value.trim();
-  const errorMsg = document.getElementById("errorMsg");
-
-  if (!legajo) {
-    errorMsg.textContent = "Ingrese su número de legajo";
-    return;
-  }
-
-  fetch(ENDPOINT, {
-    method: "POST",
-    body: JSON.stringify({ mail: userEmail, legajo }),
-    headers: { "Content-Type": "application/json" }
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      sessionStorage.setItem("usuario", userEmail);
-      window.location.href = "menu.html";
-    } else {
-      errorMsg.textContent = "Ingreso incorrecto";
+    if (!mail || !legajo) {
+      errorMsg.textContent = "Complete todos los campos";
+      return;
     }
-  })
-  .catch(err => {
-    errorMsg.textContent = "Error de conexión";
-    console.error(err);
-  });
-}
+
+    fetch(ENDPOINT, {
+      method: "POST",
+      body: JSON.stringify({ mail, legajo }),
+      headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.success){
+        sessionStorage.setItem("usuario", mail);
+        window.location.href = "menu.html"; // página principal después del login
+      } else {
+        errorMsg.textContent = "Correo o legajo incorrecto";
+      }
+    })
+    .catch(err => {
+      errorMsg.textContent = "Error de conexión con el servidor";
+      console.error(err);
+    });
+  }
 </script>
 </body>
 </html>
