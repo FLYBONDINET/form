@@ -30,6 +30,9 @@
   </div>
 
   <script>
+    if (localStorage.getItem('usuarioLogueado') !== 'true') {
+    window.location.href = 'login.html';
+    }
   // URL del Apps Script
   const urlVuelos = "https://script.google.com/macros/s/AKfycbwEz4pfgHUsmar2CNGaplmlgYDrsBzc0T8-0fS9Bj96y0eSeb1vTr3Lao51dIvIt4HC/exec";
   let tablaData = [];
