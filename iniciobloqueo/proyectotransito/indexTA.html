@@ -138,16 +138,28 @@
 <!-- Scripts -->
 <script src="js/script.js"></script>
 
-<!-- Función de cierre de sesión -->
 <script>
+  // ======= CONTROL DE SESIÓN =======
+  // Redirigir si no hay sesión activa
+  if (!localStorage.getItem('usuarioActivo')) {
+    window.location.href = "../index.html"; // Ajusta la ruta según tu estructura
+  }
+
+  // Función de cierre de sesión
   function cerrarSesion() {
-    // Limpiar datos locales o de sesión
+    // Eliminar indicador de sesión
+    localStorage.removeItem('usuarioActivo');
+    // Limpiar almacenamiento adicional
     localStorage.clear();
     sessionStorage.clear();
 
-    // Redirigir al index.html de la raíz
+    // Redirigir a index.html
     window.location.href = "../index.html";
   }
+
+  // ======= EJEMPLO: marcar sesión al iniciar login correctamente =======
+  // En tu login, ejecutar:
+  // localStorage.setItem('usuarioLogueado', 'true');
 </script>
 
 </body>
