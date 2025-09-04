@@ -14,16 +14,30 @@
 
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
-      background: var(--flybondi-light);
       margin: 0;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      overflow: hidden;
     }
 
+    /* Video de fondo */
+#bg-video {
+  position: fixed;       /* Siempre fijo en la pantalla */
+  top: 0;
+  left: 0;
+  width: 100vw;          /* Ocupa todo el ancho de la ventana */
+  height: 100vh;         /* Ocupa toda la altura de la ventana */
+  object-fit: cover;     /* Escala el video para cubrir todo sin deformar */
+  z-index: -1;           /* Detrás del contenido */
+  filter: brightness(0.7); /* Oscurece un poco para mejor contraste */
+}
+
     .container {
-      background: #fff;
+      position: relative;
+      z-index: 1; /* Sobre el video */
+      background: rgba(255, 255, 255, 0.5); /* Fondo semi-transparente */
       padding: 40px;
       border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.1);
@@ -92,6 +106,12 @@
   </style>
 </head>
 <body>
+  <!-- Video de fondo -->
+  <video autoplay muted loop id="bg-video">
+    <source src="intro.mp4" type="video/mp4">
+    Tu navegador no soporta videos de fondo.
+  </video>
+
   <div class="container">
     <img src="logo.png" alt="Logo Flybondi" class="logo">
     <h2>Ingreso al Sistema Flybondi</h2>
