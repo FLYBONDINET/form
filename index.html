@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login Flybondi</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
@@ -114,9 +114,9 @@
     function parseJwt(token) {
       let base64Url = token.split('.')[1];
       let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
+      let jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join(''));
       return JSON.parse(jsonPayload);
     }
 
@@ -125,7 +125,8 @@
 
       fetch("https://script.google.com/macros/s/AKfycbxt3WJIZjyKRl_YATnuvd7SSA4U92hcsWsBjyrLhBV-J6Of3a0bdOugUvDVwFs_-Xov/exec?mail=" 
             + encodeURIComponent(userEmail) 
-            + "&legajo=" + encodeURIComponent(legajo))
+            + "&legajo=" + encodeURIComponent(legajo)
+            + "&accion=abrir") // Marcamos sesión abierta
         .then(r => r.json())
         .then(data => {
           if (data.success) {
@@ -141,7 +142,7 @@
             document.getElementById("error").innerText = "Legajo incorrecto o no coincide con el correo.";
           }
         })
-        .catch(err => {
+        .catch(() => {
           document.getElementById("error").innerText = "Error de conexión.";
         });
     }
