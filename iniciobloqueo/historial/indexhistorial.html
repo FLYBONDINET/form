@@ -51,5 +51,17 @@
   <!-- Scripts -->
   <script src="js/main.js"></script>
   <script src="js/auth.js"></script>
+
+  <!-- Función de cierre de sesión -->
+  <script>
+    function cerrarSesion() {
+      // Limpiar datos de sesión/local
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Redirigir al index.html de la raíz
+      window.location.href = "../index.html";
+    }
+  </script>
 </body>
 </html>
