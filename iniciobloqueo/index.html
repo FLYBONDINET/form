@@ -11,7 +11,6 @@
   <!-- Logo -->
   <img src="assets/logo.png" alt="Logo Flybondi" class="logo">
 
-
   <!-- Menú principal -->
   <div class="container">
     <h1>✈️  R A M P A  ✈️</h1>
@@ -27,9 +26,26 @@
     <button class="button" onclick="location.href='historial/indexhistorial.html'">
       <i class="material-icons">history</i> Historial de Vuelos
     </button>
+
+    <!-- Botón de cerrar sesión -->
+    <button class="button logout" onclick="cerrarSesion()">
+      <i class="material-icons">exit_to_app</i> Cerrar Sesión
+    </button>
   </div>
 
   <script>
+  // 🔒 Bloqueo de acceso directo usando usuarioActivo
+  const sesion = localStorage.getItem("usuarioActivo");
+  if (!sesion) {
+      window.location.href = "../index.html"; // siempre redirige al index raíz si no hay login
+  }
+
+  // 🚪 Función para cerrar sesión
+  function cerrarSesion() {
+      localStorage.removeItem("usuarioActivo"); 
+      window.location.href = "../index.html";  // logout → vuelve al login raíz
+  }
+
   // URL del Apps Script
   const urlVuelos = "https://script.google.com/macros/s/AKfycbwEz4pfgHUsmar2CNGaplmlgYDrsBzc0T8-0fS9Bj96y0eSeb1vTr3Lao51dIvIt4HC/exec";
   let tablaData = [];
