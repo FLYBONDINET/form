@@ -8,8 +8,10 @@
 </head>
 <body data-theme="night">
 
+<!-- Logo y botón de cierre de sesión -->
 <div class="logo-container">
   <img src="assets/logo.png" class="logo" alt="Logo">
+  <button class="btn ghost" id="btnCerrarSesion" onclick="cerrarSesion()">Cerrar sesión</button>
 </div>
 
 <header>
@@ -133,6 +135,20 @@
   <button class="btn" type="button" id="btnEnviar">Enviar Vuelo</button>
 </div>
 
+<!-- Scripts -->
 <script src="js/script.js"></script>
+
+<!-- Función de cierre de sesión -->
+<script>
+  function cerrarSesion() {
+    // Limpiar datos locales o de sesión
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Redirigir al index.html de la raíz
+    window.location.href = "../index.html";
+  }
+</script>
+
 </body>
 </html>
