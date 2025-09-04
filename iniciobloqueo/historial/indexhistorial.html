@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Profesional de Vuelos</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Logo -->
+  <img src="assets/logo.png" alt="Logo Flybondi" class="logo">
+  
+<div class="top-bar">
+  <button class="mode-btn" id="toggleMode">Modo Noche</button>
+  <div class="contadores" id="contadores">
+    <div class="contador" id="vuelosDia">Vuelos hoy: 0</div>
+    <div class="contador" id="vuelosMes">Vuelos este mes: 0</div>
+    <div class="contador" id="vuelosAnio">Vuelos este año: 0</div>
+  </div>
+</div>
+
+<div class="table-container">
+  <div class="filter-container">
+    <span class="material-icons">search</span>
+    <input type="text" id="busqueda" placeholder="Filtrar por cualquier columna...">
+  </div>
+  <div class="table-scroll">
+    <table id="tablaVuelos">
+      <thead>
+        <tr>
+          <th data-column="Fecha">Fecha <span class="material-icons"></span></th>
+          <th data-column="Escala">Escala <span class="material-icons"></span></th>
+          <th data-column="Matricula">Matricula <span class="material-icons"></span></th>
+          <th data-column="LLegada Numero Vuelo">LLegada Numero Vuelo <span class="material-icons"></span></th>
+          <th data-column="Salida Numero Vuelo">Salida Numero Vuelo <span class="material-icons"></span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="5" class="loading">Cargando datos...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

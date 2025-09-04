@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Flybondi</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --flybondi-yellow: #ffd100;
+      --flybondi-dark: #2c2c2c;
+      --flybondi-light: #f9f9f9;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--flybondi-light);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo {
+      max-width: 180px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: var(--flybondi-dark);
+      margin-bottom: 25px;
+    }
+
+    #legajo-section {
+      margin-top: 20px;
+      display: none;
+    }
+
+    label {
+      font-weight: 600;
+      color: var(--flybondi-dark);
+    }
+
+    input {
+      margin-top: 8px;
+      padding: 10px;
+      width: 80%;
+      border: 2px solid var(--flybondi-yellow);
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: var(--flybondi-yellow);
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #e6bc00;
+    }
+
+    #error {
+      margin-top: 15px;
+      color: red;
+      font-weight: bold;
+    }
+
+    .g_id_signin {
+      margin: 15px auto;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="logo.png" alt="Logo Flybondi" class="logo">
+    <h2>Ingreso al Sistema Flybondi</h2>
+    
+    <!-- Botón de Google -->
+    <div id="g_id_onload"
+         data-client_id="234440818053-4jee2n6av03jtcfr0ga3i4gjvlgb7b4m.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+
+    <!-- Sección de legajo -->
+    <div id="legajo-section">
+      <h3>Bienvenido <span id="user-email"></span></h3>
+      <label for="legajo">Número de legajo</label><br>
+      <input type="text" id="legajo" placeholder="Ej: 12345"><br>
+      <button onclick="validarLegajo()">Validar</button>
+      <p id="error"></p>
+    </div>
+  </div>
+
+  <script>
+    let userEmail = "";
+
+    function handleCredentialResponse(response) {
+      const data = parseJwt(response.credential);
+      userEmail = data.email;
+
+      if (!userEmail.endsWith("@flybondi.com")) {
+        document.getElementById("error").innerText = "Acceso denegado. Solo dominio @flybondi.com";
+        return;
+      }
+
+      document.getElementById("user-email").innerText = userEmail;
+      document.getElementById("legajo-section").style.display = "block";
+    }
+
+    function parseJwt(token) {
+      let base64Url = token.split('.')[1];
+      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    function validarLegajo() {
+      const legajo = document.getElementById("legajo").value;
+
+      fetch("https://script.google.com/macros/s/AKfycbxt3WJIZjyKRl_YATnuvd7SSA4U92hcsWsBjyrLhBV-J6Of3a0bdOugUvDVwFs_-Xov/exec?mail=" 
+            + encodeURIComponent(userEmail) 
+            + "&legajo=" + encodeURIComponent(legajo))
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            window.location.href = "iniciobloqueo/index.html";
+          } else {
+            document.getElementById("error").innerText = "Legajo incorrecto o no coincide con el correo.";
+          }
+        })
+        .catch(err => {
+          document.getElementById("error").innerText = "Error de conexión.";
+        });
+    }
+  </script>
+</body>
+</html>
