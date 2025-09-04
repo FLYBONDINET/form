@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menú Principal</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .menu-box {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    width: 350px;
+    text-align: center;
+  }
+  h2 {
+    margin-bottom: 20px;
+  }
+  p {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  button {
+    padding: 10px;
+    width: 100%;
+    background: #c62828;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  button:hover {
+    background: #b71c1c;
+  }
+</style>
+</head>
+<body>
+  <div class="menu-box">
+    <h2>Bienvenido</h2>
+    <p id="usuario"></p>
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+
+<script>
+  const usuario = sessionStorage.getItem("usuario");
+
+  if (!usuario) {
+    // Si no hay usuario logueado, volver al login
+    window.location.href = "index.html";
+  } else {
+    document.getElementById("usuario").textContent = "Usuario: " + usuario;
+  }
+
+  function cerrarSesion() {
+    sessionStorage.removeItem("usuario");
+    window.location.href = "index.html";
+  }
+</script>
+</body>
+</html>
