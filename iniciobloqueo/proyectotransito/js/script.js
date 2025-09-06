@@ -14,8 +14,8 @@ const MATRICULAS = ["LV-KJD","LV-KJE","LV-KAY","LV-KAH","LV-KJF","LV-KCD","LV-KC
 
 const TIME_FIELDS = [
   "Apertura de patio","Cierre de patio","Calzas Colocación","GPU Encendido","GPU Conexión aeronave",
-  "Escalera Delantera Adose","Escalera Trasera Adose","Pasarela Adose","BT Apertura","BT Comienzo Carga",
-  "BT Fin Carga","BD Apertura","BD Comienzo Descarga","BD Fin Descarga","BD Comienzo Carga","BD Fin Carga",
+  "Escalera Delantera Adose","Escalera Trasera Adose","Pasarela Adose","BT Apertura","BD Apertura","BT Comienzo Descarga",
+  "BT Fin Descarga","BD Comienzo Descarga","BD Fin Descarga","BD Comienzo Carga","BD Fin Carga",
   "BT Inicio Carga","BT Fin Carga","BT Cierre","BD Cierre","Escalera Delantera Quite","Escalera Trasera Quite",
   "Pasarela Quite","ASU Encendido","ASU Conexión aeronave","ASU Desconexión aeronave","ASU Apagado",
   "GPU Desconexión aeronave","GPU Apagado","Calza Quite","Pushback"
@@ -153,19 +153,89 @@ const ROWID_KEY = "fo_row_id";
 
 // Construir COLS para guardado
 const allFields = [
-  "Fecha","Escala","Matricula","Salida_Numero_Vuelo","Llegada_Numero_Vuelo","Posición",
-  "SSR","Colaboradores_en_plataforma","Colaboradores_en_Patio_de_equipaje","Conciliacion_de_equipaje",
-  "Choferes_de_micro","Load_Control","LLegada_Cantidad_PAX","Salida_Cantidad_PAX",
-  "Llegada_KG_de_equipajes","Llegada__Cantidad_de_bultos_equipajes","Salida_KG_de_equipajes",
-  "Salida_Cantidad_de_bultos_equipajes","Llegada_KG_de_carga","Llegada_Cantidad_de_bultos_carga",
-  "Salida_KG_de_carga","Salida_Cantidad_de_bultos_carga","Estado_de_bolsin","Numero_de_precinto",
-  ...TIME_FIELDS.map(idOf), ...INTERNAL_FIELDS.map(idOf),"Observaciones"
+  "Fecha",
+  "Escala",
+  "Matricula",
+  "Salida_Numero_Vuelo",
+  "Llegada_Numero_Vuelo",
+  "Posición",
+  "SSR",
+  "Colaboradores_en_plataforma",
+  "Colaboradores_en_Patio_de_equipaje",
+  "Conciliacion_de_equipaje",
+  "Choferes_de_micro",
+  "Load_Control",
+  "Apertura de patio",
+  "Cierre de patio",
+  "LLegada_Cantidad_PAX",
+  "Salida_Cantidad_PAX",
+  "Llegada_KG_de_equipajes",
+  "Llegada__Cantidad_de_bultos_equipajes",
+  "Salida_KG_de_equipajes",
+  "Salida_Cantidad_de_bultos_equipajes",
+  "Llegada_KG_de_carga",
+  "Llegada_Cantidad_de_bultos_carga",
+  "Salida_KG_de_carga",
+  "Salida_Cantidad_de_bultos_carga",
+  "Estado_de_bolsin",
+  "Numero_de_precinto",
+ "Calzas Colocación",
+  "Calza Quite",
+  "GPU Encendido",
+ "GPU Conexión aeronave",
+ "GPU Desconexión aeronave",
+  "GPU Apagado",
+  "ASU Encendido",
+  "ASU Conexión aeronave",
+  "ASU Desconexión aeronave",
+  "ASU Apagado",
+  "Escalera Delantera Adose",
+  "Escalera Delantera Quite",
+  "Escalera Trasera Adose",
+  "Escalera Trasera Quite",
+  "Pasarela Adose",
+  "Pasarela Quite",
+  "BD Apertura",
+  "BD Comienzo Descarga",
+  "BD Fin Descarga",
+  "BD Comienzo Carga",
+  "BD Fin Carga",
+  "BD Cierre",
+  "BT Apertura",
+  "BT Comienzo Descarga",
+  "BT Fin Descarga",
+  "BT Inicio Carga",
+  "BT Fin Carga",
+  "BT Cierre",
+  "Pushback", 
+  "Asistencias Llegada",
+  "Asistencias salida",  
+  "GPU Interno",
+  "TL Interno",
+  "CT INTERNO",
+  "TP INTERNO",
+  "BR INTERNO",
+  "ESCALERA DELANTERA INTERNO",
+  "ESCALERA TRASERA INTERNO",  
+  "CM INTERNOS",
+  "MICROS INTERNOS",
+  "AM / AA Interno",
+  "DM / DA  Interno",
+  "CÓDIGO DEMORA",
+  "Observaciones",   
+ 
 ];
 COLS.push(...allFields);
 
-function getValuesOrdered(){ return COLS.map(lbl=>{
-  const el = document.getElementById(lbl); return el ? el.value ?? "" : "";
-});}
+function getValuesOrdered(){
+  return COLS.map(lbl=>{
+    const id = idOf(lbl);           // Transformamos el nombre a id real
+    const el = document.getElementById(id);
+    if(!el) return "";              // Si no existe, devolvemos vacío
+    if(el.type === "checkbox") return el.checked ? "Sí" : "No"; // Manejo opcional checkboxes
+    return el.value ?? "";          // Funciona para text, number, time, select, textarea
+  });
+}
 
 function saveLocal(){
   const payload = { values: getValuesOrdered(), when: Date.now(), theme: document.body.dataset.theme };
