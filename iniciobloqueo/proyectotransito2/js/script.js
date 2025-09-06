@@ -148,8 +148,8 @@ document.getElementById("toggleAsu").addEventListener("click", ()=>{
 /* ====================
    Guardado local + parcial
 ==================== */
-const STORAGE_KEY = "fo_form_temp";
-const ROWID_KEY = "fo_row_id";
+const STORAGE_KEY = "fo_form_temp1";
+const ROWID_KEY = "fo_row_id1";
 
 // Construir COLS para guardado
 const allFields = [

@@ -131,7 +131,7 @@
         .then(data => {
           if (data.success) {
             // Guardar sesión en localStorage
-            localStorage.setItem("usuarioActivo", JSON.stringify({
+            localStorage.setItem("usuarioActivo", 'true', JSON.stringify({
               email: userEmail,
               legajo: legajo,
               timestamp: Date.now()
