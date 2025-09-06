@@ -1,0 +1,266 @@
+:root {
+   --bg:#f7b501d7;
+   --card:#f7b501d7;
+   --fg:#000000;
+   --muted:#000000;
+   --accent:#ffcc00;
+   --ok:#b9c0bb;
+   --warn:#f59e0b;
+   --err:#ef4444;
+   --input-bg:#b1b7c4;
+   --border:#8898b8;
+
+   /* color acordeones abiertos */
+   --accordion-bg: #ffe28a;
+}
+
+[data-theme="day"] {
+  --bg:#2a4474;       /* azul oscuro */
+  --card:#2a4474;
+  --fg:#bb942a;
+  --muted:#bb942a;
+  --accent:#ffcc00;
+  --input-bg:#ffffff;
+  --border:#bb942a;
+
+  /* acordeones abiertos día */
+  --accordion-bg: #1e2a40;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui,Segoe UI,Arial;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+header {
+  position: sticky; 
+  top: 0; 
+  z-index: 5;
+  background: var(--card); 
+  border-bottom: 1px solid var(--border);
+  padding: 20px;
+  display: flex; 
+  align-items: center; 
+  gap: 8px;
+  transition: background 0.5s ease, border 0.5s ease;
+}
+
+header h1 {
+  font-size: 25px;
+  margin: 0;
+  flex: 1;
+}
+
+.chip {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.btn {
+  background: var(--accent);
+  color: #111;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.ghost {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+
+main {
+  padding: 16px;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: background 0.5s ease, border 0.5s ease;
+}
+
+.legend {
+  font-weight: 1000;
+  margin-bottom: 15px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.legend span.icon {
+  font-weight: 900;
+  font-size: 18px;
+  margin-left: 10px;
+}
+
+.card-content {
+  display: none;
+  padding-top: 0;
+}
+
+.card.open .card-content {
+  display: block;
+}
+
+.grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(1fr);
+}
+
+.col-12, .col-6, .col-4, .col-3 {
+  grid-column: span 4;
+}
+
+.field label {
+  display: block;
+  font-size: 20px;
+  color: var(--muted);
+  margin: 2px 0 6px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  outline: none;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--fg);
+  font-size: 20px;
+  transition: background 0.5s ease, color 0.5s ease, border 0.5s ease;
+}
+
+input[type="time"] {
+  padding-right: 0;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.time-wrap {
+  flex-direction: column;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.time-btn {
+  border: 0;
+  background: var(--accent);
+  color: #111;
+  font-weight: 900;
+  font-size: 20px;
+  border-radius: 25px;
+  padding: 15px 120px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  transition: background 0.5s ease, border 0.5s ease;
+}
+
+.bar .status {
+  flex: 1;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.ok { color: var(--ok); }
+.warn { color: var(--warn); }
+.err { color: var(--err); }
+.small { font-size: 12px; color: var(--muted); }
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  max-width: 200px;
+  width: 40%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Dropdowns internos */
+#extraDropdown, #salisa, #carga1, #carga2, #asuBlock {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, background 0.5s ease;
+  opacity: 0;
+}
+
+/* Acordeones abiertos → usan variable específica */
+#extraDropdown.show,
+#salisa.show,
+#carga1.show,
+#carga2.show,
+#asuBlock.show {
+  max-height: 1000px;
+  opacity: 1;
+  background: var(---bg); /* cambia según día/noche */
+  padding: 12px;
+  border-radius: 12px;
+  transition: max-height 0.3s ease, opacity 0.3s ease, background 0.5s ease;
+}
+
+/* Botones pequeños */
+button {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Botón de cambio de tema */
+#themeToggle {
+  font-size: 22px;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  padding: 0;
+}
