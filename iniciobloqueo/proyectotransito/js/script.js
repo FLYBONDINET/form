@@ -120,7 +120,7 @@ document.getElementById("toggleTheme").addEventListener("click", ()=>{
 /* ====================
    Dropdowns internos
 ==================== */
-const toggleDropdown = (btnId, divId, showText, hideText, bgColor="#385080")=>{
+const toggleDropdown = (btnId, divId, showText, hideText, bgColor="---bg")=>{
   const btn = document.getElementById(btnId);
   const div = document.getElementById(divId);
   btn.addEventListener("click", ()=>{
@@ -153,7 +153,7 @@ const ROWID_KEY = "fo_row_id";
 
 // Construir COLS para guardado
 const allFields = [
-  "Fecha","Escala","Matricula","Llegada_Numero_Vuelo","Salida_Numero_Vuelo","Posición",
+  "Fecha","Escala","Matricula","Salida_Numero_Vuelo","Llegada_Numero_Vuelo","Posición",
   "SSR","Colaboradores_en_plataforma","Colaboradores_en_Patio_de_equipaje","Conciliacion_de_equipaje",
   "Choferes_de_micro","Load_Control","LLegada_Cantidad_PAX","Salida_Cantidad_PAX",
   "Llegada_KG_de_equipajes","Llegada__Cantidad_de_bultos_equipajes","Salida_KG_de_equipajes",
