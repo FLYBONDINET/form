@@ -66,6 +66,19 @@
     button:hover { background: #e6bc00; }
     #error { margin-top: 15px; color: red; font-weight: bold; }
     .g_id_signin { margin: 15px auto; display: flex; justify-content: center; }
+
+    /* Banner usuario arriba del logo */
+    #usuario-info {
+      display: none;
+      text-align: center;
+      margin-bottom: 15px;
+      color: var(--flybondi-dark);
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -75,6 +88,11 @@
   </video>
 
   <div class="container">
+    <!-- Banner de usuario -->
+    <div id="usuario-info">
+      <span id="display-email"></span> | Legajo: <span id="display-legajo"></span>
+    </div>
+
     <img src="logo.png" alt="Logo Flybondi" class="logo">
     <h2>Ingreso al Sistema Flybondi</h2>
 
@@ -107,8 +125,14 @@
         return;
       }
 
+      // Mostrar sección de legajo
       document.getElementById("user-email").innerText = userEmail;
       document.getElementById("legajo-section").style.display = "block";
+
+      // Mostrar banner de usuario desde el inicio (legajo vacío hasta validar)
+      document.getElementById("display-email").innerText = userEmail;
+      document.getElementById("display-legajo").innerText = "-"; // temporal hasta validar
+      document.getElementById("usuario-info").style.display = "block";
     }
 
     function parseJwt(token) {
@@ -131,11 +155,15 @@
         .then(data => {
           if (data.success) {
             // Guardar sesión en localStorage
-            localStorage.setItem("usuarioActivo", 'true', JSON.stringify({
+            localStorage.setItem("usuarioActivo", JSON.stringify({
               email: userEmail,
               legajo: legajo,
               timestamp: Date.now()
             }));
+
+            // Actualizar banner con el legajo real
+            document.getElementById("display-legajo").innerText = legajo;
+
             // Redirigir al menú
             window.location.href = "iniciobloqueo/index.html";
           } else {
