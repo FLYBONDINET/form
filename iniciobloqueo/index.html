@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rampa Flybondi - App Móvil</title>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
   <style>
+    /* Barra superior */
     .top-bar {
       width: 100%;
       background-color: transparent; /* Fondo transparente */
@@ -14,6 +15,45 @@
       font-weight: bold;
       padding: 10px;
       text-align: right;
+    }
+
+    /* --- Nueva grilla de menú --- */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      gap: 16px 24px; /* filas / columnas */
+      align-items: start;
+      justify-items: stretch;
+      margin: 0 auto 16px;
+      max-width: 1100px; /* opcional para centrar contenido */
+      width: 100%;
+    }
+
+    .menu-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .historial-row {
+      display: flex;
+      justify-content: center;
+      margin: 12px 0 20px;
+    }
+
+    /* Opcional: centrar el bloque principal */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+      text-align: center;
+    }
+
+    /* Responsive: apila las columnas en pantallas angostas */
+    @media (max-width: 900px) {
+      .menu-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -24,23 +64,51 @@
   </div>
 
   <!-- Logo -->
-  <img src="assets/logo.png" alt="Logo Flybondi" class="logo">
+  <img src="assets/logo.png" alt="Logo Flybondi" class="logo" />
 
   <!-- Menú principal -->
   <div class="container">
     <h1>✈️  R A M P A  ✈️</h1>
-    <button class="button" onclick="location.href='rampa_llegada.html'">
-      <i class="material-icons">flight_land</i> Vuelo Llegada
-    </button>
-    <button class="button" onclick="location.href='salida/indexsalida.html'">
-      <i class="material-icons">flight_takeoff</i> Vuelo Salida
-    </button>
-    <button class="button" onclick="location.href='proyectotransito/indexTA.html'">
-      <i class="material-icons">flight</i> Vuelo en Tránsito
-    </button>
-    <button class="button" onclick="location.href='historial/indexhistorial.html'">
-      <i class="material-icons">history</i> Historial de Vuelos
-    </button>
+
+    <!-- Grilla: Llegadas (izq), Salidas (centro), Tránsito (der) -->
+    <div class="menu-grid">
+      <!-- Columna Llegadas -->
+      <div class="menu-col">
+        <button class="button" onclick="location.href='rampa_llegada.html'">
+          <i class="material-icons">flight_land</i> Vuelo Llegada 1
+        </button>
+        <button class="button" onclick="location.href='rampa_llegada.html'">
+          <i class="material-icons">flight_land</i> Vuelo Llegada 2
+        </button>
+      </div>
+
+      <!-- Columna Salidas -->
+      <div class="menu-col">
+        <button class="button" onclick="location.href='salida/indexsalida.html'">
+          <i class="material-icons">flight_takeoff</i> Vuelo Salida 1
+        </button>
+        <button class="button" onclick="location.href='salida/indexsalida.html'">
+          <i class="material-icons">flight_takeoff</i> Vuelo Salida 2
+        </button>
+      </div>
+
+      <!-- Columna Tránsito -->
+      <div class="menu-col">
+        <button class="button" onclick="location.href='proyectotransito/indexTA.html'">
+          <i class="material-icons">flight</i> Vuelo en Tránsito 1
+        </button>
+        <button class="button" onclick="location.href='proyectotransito/indexTA.html'">
+          <i class="material-icons">flight</i> Vuelo en Tránsito 2
+        </button>
+      </div>
+    </div>
+
+    <!-- Historial centrado debajo -->
+    <div class="historial-row">
+      <button class="button" onclick="location.href='historial/indexhistorial.html'">
+        <i class="material-icons">history</i> Historial de Vuelos
+      </button>
+    </div>
 
     <!-- Botón de cerrar sesión -->
     <button class="button logout" onclick="cerrarSesion()">
@@ -56,71 +124,71 @@
   </div>
 
   <script>
-  // 🔒 Bloqueo de acceso directo usando usuarioActivo
-  const sesion = localStorage.getItem("usuarioActivo");
-  if (!sesion) {
-      window.location.href = "../index.html"; 
-  } else {
+    // 🔒 Bloqueo de acceso directo usando usuarioActivo
+    const sesion = localStorage.getItem("usuarioActivo");
+    if (!sesion) {
+      window.location.href = "../index.html";
+    } else {
       let usuario;
       try {
-          usuario = JSON.parse(sesion); // intento parsear
+        usuario = JSON.parse(sesion); // intento parsear
       } catch (e) {
-          usuario = { email: sesion }; // si no es JSON, uso como string
+        usuario = { email: sesion }; // si no es JSON, uso como string
       }
 
       // Mostrar usuario y legajo
       const email = usuario.email || "-";
       const legajo = usuario.legajo || "-";
       document.getElementById("usuarioInfo").textContent = `Usuario: ${email} | Legajo: ${legajo}`;
-  }
+    }
 
-  // 🚪 Función para cerrar sesión
-  function cerrarSesion() {
-      localStorage.removeItem("usuarioActivo"); 
-      window.location.href = "../index.html";  
-  }
+    // 🚪 Función para cerrar sesión
+    function cerrarSesion() {
+      localStorage.removeItem("usuarioActivo");
+      window.location.href = "../index.html";
+    }
 
-  // URL del Apps Script
-  const urlVuelos = "https://script.google.com/macros/s/AKfycbwEz4pfgHUsmar2CNGaplmlgYDrsBzc0T8-0fS9Bj96y0eSeb1vTr3Lao51dIvIt4HC/exec";
-  let tablaData = [];
+    // URL del Apps Script
+    const urlVuelos = "https://script.google.com/macros/s/AKfycbwEz4pfgHUsmar2CNGaplmlgYDrsBzc0T8-0fS9Bj96y0eSeb1vTr3Lao51dIvIt4HC/exec";
+    let tablaData = [];
 
-  // Actualizar contadores según columna A (Fecha)
-  function actualizarContadores(){
-    const hoy = new Date();
-    const dia = hoy.toDateString();
-    const mes = hoy.getMonth();
-    const anio = hoy.getFullYear();
+    // Actualizar contadores según columna A (Fecha)
+    function actualizarContadores() {
+      const hoy = new Date();
+      const dia = hoy.toDateString();
+      const mes = hoy.getMonth();
+      const anio = hoy.getFullYear();
 
-    const vuelosHoy = tablaData.filter(f => new Date(f.Fecha).toDateString() === dia).length;
-    const vuelosMes = tablaData.filter(f => {
-      const fecha = new Date(f.Fecha);
-      return fecha.getMonth() === mes && fecha.getFullYear() === anio;
-    }).length;
-    const vuelosAnio = tablaData.filter(f => new Date(f.Fecha).getFullYear() === anio).length;
+      const vuelosHoy = tablaData.filter(f => new Date(f.Fecha).toDateString() === dia).length;
+      const vuelosMes = tablaData.filter(f => {
+        const fecha = new Date(f.Fecha);
+        return fecha.getMonth() === mes && fecha.getFullYear() === anio;
+      }).length;
+      const vuelosAnio = tablaData.filter(f => new Date(f.Fecha).getFullYear() === anio).length;
 
-    document.getElementById("vuelosDia").textContent = `Vuelos hoy: ${vuelosHoy}`;
-    document.getElementById("vuelosMes").textContent = `Vuelos mes: ${vuelosMes}`;
-    document.getElementById("vuelosAnio").textContent = `Vuelos año: ${vuelosAnio}`;
-  }
+      document.getElementById("vuelosDia").textContent = `Vuelos hoy: ${vuelosHoy}`;
+      document.getElementById("vuelosMes").textContent = `Vuelos mes: ${vuelosMes}`;
+      document.getElementById("vuelosAnio").textContent = `Vuelos año: ${vuelosAnio}`;
+    }
 
-  // Obtener datos de vuelos desde Apps Script
-  function obtenerVuelos(){
-    fetch(urlVuelos)
-      .then(res => res.json())
-      .then(data => {
-        if(Array.isArray(data)){
-          tablaData = data.map(f => ({ Fecha: f.Fecha || "" }));
-          actualizarContadores();
-        } else {
-          console.error("Formato de datos incorrecto", data);
-        }
-      })
-      .catch(err => console.error("Error fetch vuelos:", err));
-  }
+    // Obtener datos de vuelos desde Apps Script
+    function obtenerVuelos() {
+      fetch(urlVuelos)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            tablaData = data.map(f => ({ Fecha: f.Fecha || "" }));
+            actualizarContadores();
+          } else {
+            console.error("Formato de datos incorrecto", data);
+          }
+        })
+        .catch(err => console.error("Error fetch vuelos:", err));
+    }
 
-  // Inicializar
-  obtenerVuelos();
-  setInterval(obtenerVuelos, 10000);
+    // Inicializar
+    obtenerVuelos();
+    setInterval(obtenerVuelos, 10000);
   </script>
 </body>
 </html>
