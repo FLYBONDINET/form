@@ -7,7 +7,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHK1IUOfV6Sz3v
 const DESTINOS_IATA = [
   "AEP","AUQ","BRC","CNF","CNQ","COR","CRD","ENO","EZE","FTE","FLN","GIG",
   "GRU","IGR","JUJ","MCZ","MDQ","MDZ","MVD","NQN","PDP","PMY","REL","RES",
-  "SDE","SLA","TUC","USH"
+  "SDE","SLA","TUC","USH","PSS"
 ];
 
 const MATRICULAS = ["LV-KJD","LV-KJE","LV-KAY","LV-KAH","LV-KJF","LV-KCD","LV-KCE","LV-HKN","LV-KHO","LV-KEF","LV-KEG","LV-KEH","LV-KDR","LV-KDQ","LY-MLJ","LY-VEL","LY-NVL","PR-MLD"];
@@ -30,8 +30,55 @@ const INTERNAL_FIELDS = [
 /* ====================
    Helpers
 ==================== */
-const idOf = (label) => label.replaceAll("  "," ").replace(/[^\p{L}\p{N}]+/gu,"_").replace(/^_+|_+$/g,"");
+const idOf = (label) =>
+  label
+    .replaceAll("  "," ")
+    .replace(/[^\p{L}\p{N}]+/gu,"_")
+    .replace(/^_+|_+$/g,"");
+
 const COLS = [];  // Se llenará automáticamente para guardado
+
+/* ====================
+   NAMESPACE por página (¡NUEVO!)
+   - Usa body[data-form], o si no, <title> o la URL
+   - Así cada HTML guarda sus propias claves
+==================== */
+const NAMESPACE = (() => {
+  const raw =
+    (document.body?.dataset?.form) ||
+    document.title ||
+    location.pathname;
+
+  const cleaned = raw
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // saca acentos
+    .replace(/[^\p{L}\p{N}]+/gu, "_")
+    .toLowerCase();
+
+  return `fo:${cleaned}:`;
+})();
+
+const nsKey = (k) => `${NAMESPACE}${k}`;
+
+const nsStorage = {
+  set(k, v) { localStorage.setItem(nsKey(k), JSON.stringify(v)); },
+  get(k, fallback = null) {
+    const raw = localStorage.getItem(nsKey(k));
+    return raw ? JSON.parse(raw) : fallback;
+  },
+  remove(k) { localStorage.removeItem(nsKey(k)); },
+  clearAll() {
+    const toDelete = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(NAMESPACE)) toDelete.push(k);
+    }
+    toDelete.forEach(k => localStorage.removeItem(k));
+  }
+};
+
+// Si preferís que el tema NO se comparta, descomentá y usá nsKey también.
+// Por ahora lo dejamos global con "fo_theme".
+const THEME_KEY = "fo_theme";
 
 /* ====================
    Render estático
@@ -106,15 +153,15 @@ document.querySelectorAll(".time-btn").forEach(btn=>{
 });
 
 /* ====================
-   Tema día/noche
+   Tema día/noche (global)
 ==================== */
 document.getElementById("toggleTheme").addEventListener("click", ()=>{
   const cur = document.body.dataset.theme;
   document.body.dataset.theme = cur==="day" ? "night" : "day";
-  localStorage.setItem("fo_theme", document.body.dataset.theme);
+  localStorage.setItem(THEME_KEY, document.body.dataset.theme); // global por dominio
 });
 (function restoreTheme(){
-  const t = localStorage.getItem("fo_theme"); if(t) document.body.dataset.theme = t;
+  const t = localStorage.getItem(THEME_KEY); if(t) document.body.dataset.theme = t;
 })();
 
 /* ====================
@@ -146,10 +193,10 @@ document.getElementById("toggleAsu").addEventListener("click", ()=>{
 });
 
 /* ====================
-   Guardado local + parcial
+   Guardado local + parcial (NAMESPACED)
 ==================== */
-const STORAGE_KEY = "fo_form_temp1";
-const ROWID_KEY = "fo_row_id1";
+const STORAGE_KEY = "form_temp";
+const ROWID_KEY = "row_id";
 
 // Construir COLS para guardado
 const allFields = [
@@ -179,11 +226,11 @@ const allFields = [
   "Salida_Cantidad_de_bultos_carga",
   "Estado_de_bolsin",
   "Numero_de_precinto",
- "Calzas Colocación",
+  "Calzas Colocación",
   "Calza Quite",
   "GPU Encendido",
- "GPU Conexión aeronave",
- "GPU Desconexión aeronave",
+  "GPU Conexión aeronave",
+  "GPU Desconexión aeronave",
   "GPU Apagado",
   "ASU Encendido",
   "ASU Conexión aeronave",
@@ -222,8 +269,7 @@ const allFields = [
   "AM / AA Interno",
   "DM / DA  Interno",
   "CÓDIGO DEMORA",
-  "Observaciones",   
- 
+  "Observaciones"
 ];
 COLS.push(...allFields);
 
@@ -232,24 +278,25 @@ function getValuesOrdered(){
     const id = idOf(lbl);           // Transformamos el nombre a id real
     const el = document.getElementById(id);
     if(!el) return "";              // Si no existe, devolvemos vacío
-    if(el.type === "checkbox") return el.checked ? "Sí" : "No"; // Manejo opcional checkboxes
-    return el.value ?? "";          // Funciona para text, number, time, select, textarea
+    if(el.type === "checkbox") return el.checked ? "Sí" : "No";
+    return el.value ?? "";
   });
 }
 
 function saveLocal(){
   const payload = { values: getValuesOrdered(), when: Date.now(), theme: document.body.dataset.theme };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  nsStorage.set(STORAGE_KEY, payload); // ⬅️ ahora con namespace
   setStatus("Guardado local", "ok");
 }
 
 function loadLocal(){
-  const j = localStorage.getItem(STORAGE_KEY); if(!j) return;
+  const data = nsStorage.get(STORAGE_KEY);
+  if(!data) return;
   try{
-    const {values, theme} = JSON.parse(j);
+    const {values, theme} = data;
     if(theme) document.body.dataset.theme = theme;
-    values.forEach((v,idx)=>{
-      const el = document.getElementById(COLS[idx]);
+    values.forEach((v, idx)=>{
+      const el = document.getElementById(idOf(COLS[idx])); // ⬅️ FIX: usar idOf
       if(el) el.value = v;
     });
     setStatus("Recuperado desde el dispositivo", "ok");
@@ -260,11 +307,11 @@ document.addEventListener("input", ()=>{
   saveLocal();
   schedulePartialSave();
 });
+
 document.getElementById("btnBorrarLocal").addEventListener("click", ()=>{
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(ROWID_KEY);
+  nsStorage.clearAll(); // ⬅️ borra SOLO lo de esta página
   document.getElementById("chipRow").textContent = "";
-  setStatus("Guardado local borrado", "warn");
+  setStatus("Guardado local borrado (solo esta página)", "warn");
 });
 
 loadLocal();
@@ -281,20 +328,25 @@ async function savePartial(){
     return;
   }
   try{
-    const rowId = localStorage.getItem(ROWID_KEY) || "";
+    const rowId = nsStorage.get(ROWID_KEY, ""); // ⬅️ namespaced
     const res = await fetch(APPS_SCRIPT_URL, {
-  method: "POST",
-  headers: {"Content-Type":"application/json"},
-  body: JSON.stringify({modo:"parcial", rowId, cols:COLS, values:getValuesOrdered()})
-});
-const data = await res.json();
-if(data.ok && data.rowId){
-  localStorage.setItem(ROWID_KEY, data.rowId);
-  document.getElementById("chipRow").textContent = data.rowId;
-}
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({modo:"parcial", rowId, cols:COLS, values:getValuesOrdered()})
+    });
 
-    // No se puede leer JSON con no-cors → marcamos solo estado local
-    setStatus("Guardado parcial enviado (no se puede confirmar por CORS)","ok");
+    // Si tu Apps Script responde JSON + CORS correcto:
+    try {
+      const data = await res.json();
+      if(data.ok && data.rowId){
+        nsStorage.set(ROWID_KEY, data.rowId);
+        document.getElementById("chipRow").textContent = data.rowId;
+      }
+    } catch {
+      // En caso de no-CORS o sin JSON, seguimos sin romper
+    }
+
+    setStatus("Guardado parcial enviado (puede no confirmarse por CORS)","ok");
 
   }catch(e){
     setStatus("");
@@ -304,20 +356,19 @@ if(data.ok && data.rowId){
 document.getElementById("btnEnviar").addEventListener("click", async ()=>{
   saveLocal();
   try{
-    const rowId = localStorage.getItem(ROWID_KEY) || "";
+    const rowId = nsStorage.get(ROWID_KEY, "");
     await fetch(APPS_SCRIPT_URL, {
       method:"POST",
-      mode:"no-cors",  // 👈 igual acá
+      mode:"no-cors",  // algunos deployments requieren no-cors para el final
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({modo:"final", rowId, cols:COLS, values:getValuesOrdered()})
     });
 
-    // No podemos leer respuesta → asumimos que salió bien
     setStatus("Vuelo enviado (no se puede confirmar por CORS)","ok");
     alert("Vuelo enviado ✅");
 
-    localStorage.removeItem(STORAGE_KEY); 
-    localStorage.removeItem(ROWID_KEY);
+    // Limpieza SOLO del namespace actual
+    nsStorage.clearAll();
     document.getElementById("chipRow").textContent="";
 
   }catch(e){

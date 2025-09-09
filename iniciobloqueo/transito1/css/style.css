@@ -1,19 +1,24 @@
 :root {
-   --bg:#f7b501d7;
-   --card:#f7b501d7;
-   --fg:#000000;
-   --muted:#000000;
-   --accent:#ffcc00;
-   --ok:#b9c0bb;
-   --warn:#f59e0b;
-   --err:#ef4444;
-   --input-bg:#b1b7c4;
-   --border:#8898b8;
+  /* NIGHT (por defecto: 19–06) */
+  --bg:#f7b501d7;
+  --card:#f7b501d7;
+  --fg:#000000;
+  --muted:#000000;
+  --accent:#ffcc00;
+  --ok:#b9c0bb;
+  --warn:#f59e0b;
+  --err:#ef4444;
+  --input-bg:#b1b7c4;
+  --border:#8898b8;
 
-   /* color acordeones abiertos */
-   --accordion-bg: #ffe28a;
+  /* color acordeones abiertos */
+  --accordion-bg: #ffe28a;
+
+  /* alto barra superior */
+  --topbar-h: 56px;
 }
 
+/* DAY (06–19) */
 [data-theme="day"] {
   --bg:#2a4474;       /* azul oscuro */
   --card:#2a4474;
@@ -33,16 +38,60 @@
 
 body {
   margin: 0;
-  font-family: system-ui,Segoe UI,Arial;
+  font-family: system-ui, Segoe UI, Arial, sans-serif;
   background: var(--bg);
   color: var(--fg);
   transition: background 0.5s ease, color 0.5s ease;
 }
 
+/* ===== Barra superior ===== */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: var(--topbar-h);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.5s ease, border 0.5s ease;
+}
+
+.top-bar-left,
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-bar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.top-bar button {
+  font-size: 16px;
+  padding: 6px 14px;
+  border-radius: 8px;
+}
+
+/* Logo en la barra superior */
+.logo {
+  max-width: 200px;
+  width: 40%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ===== Header (debajo de la top-bar) ===== */
 header {
   position: sticky; 
-  top: 0; 
-  z-index: 5;
+  top: var(--topbar-h); 
+  z-index: 10;
   background: var(--card); 
   border-bottom: 1px solid var(--border);
   padding: 20px;
@@ -63,6 +112,7 @@ header h1 {
   color: var(--muted);
 }
 
+/* ===== Botones ===== */
 .btn {
   background: var(--accent);
   color: #111;
@@ -71,7 +121,7 @@ header h1 {
   padding: 10px 20px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.5s ease, color 0.5s ease;
+  transition: background 0.5s ease, color 0.5s ease, border 0.5s ease;
 }
 
 .ghost {
@@ -80,12 +130,34 @@ header h1 {
   border: 1px solid var(--border);
 }
 
+button {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Botón de cambio de tema */
+#toggleTheme,
+#themeToggle {
+  font-size: 16px;
+  line-height: 1;
+  padding: 6px 14px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* ===== Main ===== */
 main {
   padding: 16px;
   max-width: 768px;
   margin: 0 auto;
 }
 
+/* ===== Cards ===== */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -119,14 +191,30 @@ main {
   display: block;
 }
 
+/* ===== GRID ===== */
 .grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+/* columnas (mobile-first: ocupan 4/4 = 1 fila) */
 .col-12, .col-6, .col-4, .col-3 {
   grid-column: span 4;
+}
+
+/* ≥ 640px */
+@media (min-width: 640px) {
+  .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .col-12 { grid-column: span 4; }
+  .col-6  { grid-column: span 2; }
+  .col-4  { grid-column: span 1; } /* 4 columnas = 1/4 de fila */
+  .col-3  { grid-column: span 1; }
+}
+
+/* ≥ 900px */
+@media (min-width: 900px) {
+  .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 .field label {
@@ -163,6 +251,7 @@ textarea {
   resize: vertical;
 }
 
+/* ===== Otros ===== */
 .time-wrap {
   flex-direction: column;
   display: flex;
@@ -183,6 +272,7 @@ textarea {
   transition: background 0.5s ease, color 0.5s ease;
 }
 
+/* Barra inferior */
 .bar {
   position: sticky;
   bottom: 0;
@@ -207,20 +297,7 @@ textarea {
 .err { color: var(--err); }
 .small { font-size: 12px; color: var(--muted); }
 
-.logo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.logo {
-  max-width: 200px;
-  width: 40%;
-  height: auto;
-  object-fit: contain;
-}
-
-/* Dropdowns internos */
+/* ===== Dropdowns internos (acordeones) ===== */
 #extraDropdown, #salisa, #carga1, #carga2, #asuBlock {
   max-height: 0;
   overflow: hidden;
@@ -228,7 +305,6 @@ textarea {
   opacity: 0;
 }
 
-/* Acordeones abiertos → usan variable específica */
 #extraDropdown.show,
 #salisa.show,
 #carga1.show,
@@ -236,31 +312,12 @@ textarea {
 #asuBlock.show {
   max-height: 1000px;
   opacity: 1;
-  background: var(---bg); /* cambia según día/noche */
+  background: var(--accordion-bg);
   padding: 12px;
   border-radius: 12px;
   transition: max-height 0.3s ease, opacity 0.3s ease, background 0.5s ease;
 }
 
-/* Botones pequeños */
-button {
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-/* Botón de cambio de tema */
-#themeToggle {
-  font-size: 22px;
-  line-height: 1;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
-  padding: 0;
-}
+/* (Opcional) Quita márgenes del body si usas 100% height layouts
+html, body { height: 100%; }
+*/
