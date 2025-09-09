@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>T R Á N S I T O   1   </title>
+<title>L L E G A D A    </title>
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-theme="night" data-form="transito1">
+<body data-theme="day" data-form="llegada">
 
 <!-- Barra superior con botones y logo -->
 <div class="top-bar">
@@ -25,7 +25,7 @@
 </div>
 
 <header>
-  <h1>T R Á N S I T O   2   </h1>
+  <h1>L L E G A D A   </h1>
   <span class="chip" id="chipRow"></span>
 </header>
 
@@ -39,7 +39,6 @@
         <div class="field col-4"><label for="Escala">Escala (IATA)</label><select id="Escala"></select></div>
         <div class="field col-4"><label for="Matricula">Matrícula</label><select id="Matricula"></select></div>
         <div class="field col-3"><label for="Llegada_Numero_Vuelo">LLegada vuelo FO</label><input id="Llegada_Numero_Vuelo" /></div>
-        <div class="field col-3"><label for="Salida_Numero_Vuelo">Salida vuelo FO</label><input id="Salida_Numero_Vuelo" /></div>
         <div class="field col-3"><label for="Posición">Posición</label><input id="Posición" /></div>
       </div>
     </div>
@@ -52,8 +51,6 @@
       <div class="grid">
         <div class="field col-3"><label for="SSR">SSR</label><input id="SSR" /></div>
         <div class="field col-3"><label for="Colaboradores_en_plataforma">Colaboradores en plataforma</label><input id="Colaboradores_en_plataforma" /></div>
-        <div class="field col-3"><label for="Colaboradores_en_Patio_de_equipaje">Colaboradores en Patio de equipaje</label><input id="Colaboradores_en_Patio_de_equipaje" /></div>
-        <div class="field col-3"><label for="Conciliacion_de_equipaje">Conciliacion de equipaje</label><input id="Conciliacion_de_equipaje" /></div>
         <div class="field col-3"><label for="Choferes_de_micro">Choferes de micro</label><input id="Choferes_de_micro" /></div>
         <div class="field col-3"><label for="Load_Control">Load Control</label><input id="Load_Control" /></div>
       </div>
@@ -82,24 +79,6 @@
           </div>
         </div>
 
-        <!-- Salida -->
-        <div class="field col-12">
-          <button class="btn ghost" type="button" id="toggleDropdown2">Salida</button>
-          <div id="salisa">
-            <div class="field col-3"><label for="Salida_Cantidad_de_bultos_equipajes">Cantidad bultos equipajes</label><input type="number" min="0" id="Salida_Cantidad_de_bultos_equipajes" /></div>
-            <div class="field col-3"><label for="Salida_KG_de_equipajes">KG de equipajes</label><input type="number" min="0" step="0.1" id="Salida_KG_de_equipajes" /></div>
-
-            <div class="field col-12">
-              <button class="btn ghost" type="button" id="toggleDropdown3">Carga en Salida</button>
-              <div id="carga1">
-                <div class="field col-3"><label for="Salida_Cantidad_de_bultos_carga">Cantidad bultos carga</label><input type="number" min="0" id="Salida_Cantidad_de_bultos_carga" /></div>
-                <div class="field col-3"><label for="Salida_KG_de_carga">KG de carga</label><input type="number" min="0" step="0.1" id="Salida_KG_de_carga" /></div>
-              </div>
-            </div>
-
-            <div class="field col-3"><label for="Salida_Cantidad_PAX">Cantidad PAX</label><input type="number" min="0" id="Salida_Cantidad_PAX" /></div>
-          </div>
-        </div>
 
         <div class="field col-3"><label for="Estado_de_bolsin">Estado de bolsin</label>
           <select id="Estado_de_bolsin">
@@ -120,10 +99,6 @@
     <div class="card-content">
       <div class="grid" id="timeGrid"></div>
 
-      <div class="field col-12">
-        <button class="btn ghost" type="button" id="toggleAsu">ASU</button>
-        <div id="asuBlock"></div>
-      </div>
       <div class="small">Todos estos campos tienen botón ⏱ para cargar hora actual (editable).</div>
     </div>
   </section>
@@ -178,10 +153,6 @@
     const LOCK_KEY = 'themeLockedThisSession'; // 'true' si el usuario tocó el botón en esta sesión
     const THEME_ATTR = 'data-theme';           // 'day' | 'night'
 
-    function isNight(d = new Date()) {
-      const h = d.getHours(); // hora local
-      return (h >= 19 || h < 6); // Noche: 19–23 y 0–5
-    }
 
     function applyTheme(theme) {
       ROOT.setAttribute(THEME_ATTR, theme);

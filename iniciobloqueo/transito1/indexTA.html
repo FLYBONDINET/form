@@ -6,7 +6,7 @@
 <title>T R Á N S I T O   1   </title>
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-theme="night" data-form="transito2">
+<body data-theme="day" data-form="transito2">
 
 <!-- Barra superior con botones y logo -->
 <div class="top-bar">
@@ -180,7 +180,7 @@
 
     function isNight(d = new Date()) {
       const h = d.getHours(); // hora local
-      return (h >= 6 || h < 19); // Noche: 19–23 y 0–5
+      return (h >= 19 || h < 6); // Noche: 19–23 y 0–5
     }
 
     function applyTheme(theme) {

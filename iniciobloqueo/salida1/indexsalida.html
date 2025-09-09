@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>T R Á N S I T O   1   </title>
+<title>S A L I D A  </title>
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-theme="night">
+<body data-theme="day" data-form="salida1">
 
 <!-- Barra superior con botones y logo -->
 <div class="top-bar">
@@ -25,8 +25,8 @@
 </div>
 
 <header>
-  <h1>T R Á N S I T O   1   </h1>
-  <span class="chip" id="chipRow">Sin fila</span>
+  <h1>S A L I D A  </h1>
+  <span class="chip" id="chipRow"></span>
 </header>
 
 <main>
@@ -38,7 +38,6 @@
         <div class="field col-4"><label for="Fecha">Fecha</label><input type="date" id="Fecha" /></div>
         <div class="field col-4"><label for="Escala">Escala (IATA)</label><select id="Escala"></select></div>
         <div class="field col-4"><label for="Matricula">Matrícula</label><select id="Matricula"></select></div>
-        <div class="field col-3"><label for="Llegada_Numero_Vuelo">LLegada vuelo FO</label><input id="Llegada_Numero_Vuelo" /></div>
         <div class="field col-3"><label for="Salida_Numero_Vuelo">Salida vuelo FO</label><input id="Salida_Numero_Vuelo" /></div>
         <div class="field col-3"><label for="Posición">Posición</label><input id="Posición" /></div>
       </div>
@@ -65,22 +64,6 @@
     <div class="legend">Equipajes y Carga <span class="icon">+</span></div>
     <div class="card-content">
       <div class="grid">
-        <!-- Llegada -->
-        <div class="field col-12">
-          <button class="btn ghost" type="button" id="toggleDropdown">Llegada</button>
-          <div id="extraDropdown">
-            <div class="field col-3"><label for="Llegada__Cantidad_de_bultos_equipajes">Cantidad bultos equipajes</label><input type="number" min="0" id="Llegada__Cantidad_de_bultos_equipajes" /></div>
-            <div class="field col-3"><label for="Llegada_KG_de_equipajes">KG de equipajes</label><input type="number" min="0" step="0.1" id="Llegada_KG_de_equipajes" /></div>
-            <div class="field col-12">
-              <button class="btn ghost" type="button" id="toggleDropdown4">Carga en Llegada</button>
-              <div id="carga2">
-                <div class="field col-3"><label for="Llegada_Cantidad_de_bultos_carga">Cantidad bultos carga</label><input type="number" min="0" id="Llegada_Cantidad_de_bultos_carga" /></div>
-                <div class="field col-3"><label for="Llegada_KG_de_carga">KG de carga</label><input type="number" min="0" step="0.1" id="Llegada_KG_de_carga" /></div>
-              </div>
-            </div>
-            <div class="field col-3"><label for="LLegada_Cantidad_PAX">Cantidad PAX</label><input type="number" min="0" id="LLegada_Cantidad_PAX" /></div>
-          </div>
-        </div>
 
         <!-- Salida -->
         <div class="field col-12">
@@ -178,10 +161,6 @@
     const LOCK_KEY = 'themeLockedThisSession'; // 'true' si el usuario tocó el botón en esta sesión
     const THEME_ATTR = 'data-theme';           // 'day' | 'night'
 
-    function isNight(d = new Date()) {
-      const h = d.getHours(); // hora local
-      return (h >= 6 || h < 19); // Noche: 19–23 y 0–5
-    }
 
     function applyTheme(theme) {
       ROOT.setAttribute(THEME_ATTR, theme);
@@ -192,7 +171,7 @@
     }
 
     function autoApplyIfUnlocked() {
-      if (sessionStorage.getItem(LOCK_KEY) === 'true') return; // usuario eligió manual en esta sesión
+      if (sessionStorage.getItem(LOCK_KEY) === 'false') return; // usuario eligió manual en esta sesión
       applyTheme(isNight() ? 'night' : 'day');
     }
 
@@ -208,7 +187,7 @@
         const current = ROOT.getAttribute(THEME_ATTR) || (isNight() ? 'night' : 'day');
         const next = current === 'night' ? 'day' : 'night';
         applyTheme(next);
-        sessionStorage.setItem(LOCK_KEY, 'true');
+        sessionStorage.setItem(LOCK_KEY, 'false');
       });
     }
   })();

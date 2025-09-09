@@ -6,23 +6,21 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHK1IUOfV6Sz3v
 
 const DESTINOS_IATA = [
   "AEP","AUQ","BRC","CNF","CNQ","COR","CRD","ENO","EZE","FTE","FLN","GIG",
-  "GRU","IGR","JUJ","MCZ","MDQ","MDZ","MVD","NQN","PDP","PMY","REL","RES",
-  "SDE","SLA","TUC","USH","PSS"
+  "GRU","IGR","JUJ","MCZ","MDQ","MDZ","MVD","NQN","PDP","PMY","PSS","REL","RES",
+  "SDE","SLA","TUC","USH"
 ];
 
 const MATRICULAS = ["LV-KJD","LV-KJE","LV-KAY","LV-KAH","LV-KJF","LV-KCD","LV-KCE","LV-HKN","LV-KHO","LV-KEF","LV-KEG","LV-KEH","LV-KDR","LV-KDQ","LY-MLJ","LY-VEL","LY-NVL","PR-MLD"];
 
 const TIME_FIELDS = [
-  "Apertura de patio","Cierre de patio","GPU Encendido","GPU Conexión aeronave",
+"Calzas Colocación","GPU Encendido","GPU Conexión aeronave",
   "Escalera Delantera Adose","Escalera Trasera Adose","Pasarela Adose","BT Apertura","BD Apertura","BT Comienzo Descarga",
-  "BT Fin Descarga","BD Comienzo Descarga","BD Fin Descarga","BD Comienzo Carga","BD Fin Carga",
-  "BT Inicio Carga","BT Fin Carga","BT Cierre","BD Cierre","Escalera Delantera Quite","Escalera Trasera Quite",
-  "Pasarela Quite","ASU Encendido","ASU Conexión aeronave","ASU Desconexión aeronave","ASU Apagado",
-  "GPU Desconexión aeronave","GPU Apagado","Calza Quite","Pushback"
+  "BT Fin Descarga","BD Comienzo Descarga","BD Fin Descarga",
+  "BT Cierre","BD Cierre"
 ];
 
 const INTERNAL_FIELDS = [
-  "Asistencias salida","GPU Interno","TL Interno","CT INTERNO","TP INTERNO","BR INTERNO",
+  "Asistencias Llegada","GPU Interno","TL Interno","CT INTERNO","TP INTERNO","BR INTERNO",
   "ESCALERA DELANTERA INTERNO","ESCALERA TRASERA INTERNO","CM INTERNOS","MICROS INTERNOS","AM / AA Interno",
   "DM / DA  Interno","CÓDIGO DEMORA"
 ];
@@ -180,8 +178,8 @@ const toggleDropdown = (btnId, divId, showText, hideText, bgColor="---bg")=>{
     }
   });
 };
-toggleDropdown("toggleDropdown2","salisa","Salida","Ocultar Opciones Salida");
-toggleDropdown("toggleDropdown3","carga1","Carga en Salida","Ocultar Opciones Carga");
+toggleDropdown("toggleDropdown","extraDropdown","Llegada","Ocultar Opciones LLegada");
+toggleDropdown("toggleDropdown4","carga2","Carga en Llegada","Ocultar Opciones Carga");
 
 document.getElementById("toggleAsu").addEventListener("click", ()=>{
   const asu = document.getElementById("asuBlock");
