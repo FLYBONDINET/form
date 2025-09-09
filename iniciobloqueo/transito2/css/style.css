@@ -22,11 +22,11 @@
 [data-theme="day"] {
   --bg:#2a4474;       /* azul oscuro */
   --card:#2a4474;
-  --fg:#bb942a;
-  --muted:#bb942a;
+  --fg:#f0da9f;
+  --muted:#dfc784;
   --accent:#ffcc00;
   --input-bg:#ffffff;
-  --border:#bb942a;
+  --border:#d8c695;
 
   /* acordeones abiertos día */
   --accordion-bg: #1e2a40;

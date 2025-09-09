@@ -26,7 +26,7 @@
 
 <header>
   <h1>T R Á N S I T O   2   </h1>
-  <span class="chip" id="chipRow">Sin fila</span>
+  <span class="chip" id="chipRow"></span>
 </header>
 
 <main>
@@ -208,7 +208,7 @@
         const current = ROOT.getAttribute(THEME_ATTR) || (isNight() ? 'night' : 'day');
         const next = current === 'night' ? 'day' : 'night';
         applyTheme(next);
-        sessionStorage.setItem(LOCK_KEY, 'false');
+        sessionStorage.setItem(LOCK_KEY, 'true');
       });
     }
   })();
