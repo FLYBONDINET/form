@@ -14,8 +14,8 @@ const MATRICULAS = ["LV-KJD","LV-KJE","LV-KAY","LV-KAH","LV-KJF","LV-KCD","LV-KC
 
 const TIME_FIELDS = [
 "Calzas Colocación","GPU Encendido","GPU Conexión aeronave",
-  "Escalera Delantera Adose","Escalera Trasera Adose","Pasarela Adose","BT Apertura","BD Apertura","BT Comienzo Descarga",
-  "BT Fin Descarga","BD Comienzo Descarga","BD Fin Descarga",
+  "Escalera Delantera Adose","Escalera Trasera Adose","Pasarela Adose","BT Apertura","BD Apertura","BT Inicio Descarga",
+  "BT Fin Descarga","BD Inicio Descarga","BD Fin Descarga",
   "BT Cierre","BD Cierre"
 ];
 
@@ -239,13 +239,13 @@ const allFields = [
   "Pasarela Adose",
   "Pasarela Quite",
   "BD Apertura",
-  "BD Comienzo Descarga",
+  "BD Inicio Descarga",
   "BD Fin Descarga",
-  "BD Comienzo Carga",
+  "BD Inicio Carga",
   "BD Fin Carga",
   "BD Cierre",
   "BT Apertura",
-  "BT Comienzo Descarga",
+  "BT Inicio Descarga",
   "BT Fin Descarga",
   "BT Inicio Carga",
   "BT Fin Carga",

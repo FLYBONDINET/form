@@ -165,7 +165,7 @@
     function applyTheme(theme) {
       ROOT.setAttribute(THEME_ATTR, theme);
       // (Opcional) Actualizar texto del botón
-      if (BTN) BTN.textContent = theme === 'night' ? 'Día/Noche' : 'Día/Noche';
+      if (BTN) BTN.textContent = theme === 'day' ? 'Día/Noche' : 'Día/Noche';
       // Si quisieras mostrar el estado, podrías poner:
       // BTN.textContent = theme === 'night' ? 'Cambiar a Día' : 'Cambiar a Noche';
     }
@@ -185,7 +185,7 @@
     if (BTN) {
       BTN.addEventListener('click', () => {
         const current = ROOT.getAttribute(THEME_ATTR) || (isNight() ? 'night' : 'day');
-        const next = current === 'night' ? 'day' : 'night';
+        const next = current === 'day' ? 'day' : 'night';
         applyTheme(next);
         sessionStorage.setItem(LOCK_KEY, 'false');
       });
