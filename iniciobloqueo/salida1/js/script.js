@@ -14,7 +14,7 @@ const MATRICULAS = ["LV-KJD","LV-KJE","LV-KAY","LV-KAH","LV-KJF","LV-KCD","LV-KC
 
 const TIME_FIELDS = [
   "Apertura de patio","Cierre de patio","GPU Encendido","GPU Conexión aeronave",
-  "Escalera Delantera Adose","Escalera Trasera Adose","Pasarela Adose","BT Apertura","BD Apertura", "BD Comienzo Carga","BD Fin Carga",
+  "BT Apertura","BD Apertura", "BD Comienzo Carga","BD Fin Carga",
   "BT Inicio Carga","BT Fin Carga","BT Cierre","BD Cierre","Escalera Delantera Quite","Escalera Trasera Quite",
   "Pasarela Quite","ASU Encendido","ASU Conexión aeronave","ASU Desconexión aeronave","ASU Apagado",
   "GPU Desconexión aeronave","GPU Apagado","Calza Quite","Pushback"

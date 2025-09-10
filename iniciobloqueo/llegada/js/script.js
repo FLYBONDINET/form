@@ -20,9 +20,9 @@ const TIME_FIELDS = [
 ];
 
 const INTERNAL_FIELDS = [
-  "Asistencias Llegada","GPU Interno","TL Interno","CT INTERNO","TP INTERNO","BR INTERNO",
+  "Asistencias Llegada","GPU Interno","TL Interno","CT INTERNO",
   "ESCALERA DELANTERA INTERNO","ESCALERA TRASERA INTERNO","CM INTERNOS","MICROS INTERNOS","AM / AA Interno",
-  "DM / DA  Interno","CÓDIGO DEMORA"
+  "DM / DA  Interno"
 ];
 
 /* ====================
