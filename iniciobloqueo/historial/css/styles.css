@@ -226,3 +226,5 @@ body.night .btn.back:hover {
   background: #793905d8;
   color: #fff;
 }
+.kpi-value, .contador .num, .kpi-list .num { font-variant-numeric: tabular-nums; }
+.kpi-value, .contador .num { transition: color .2s ease; }

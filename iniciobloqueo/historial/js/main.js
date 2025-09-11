@@ -83,6 +83,57 @@ function normalizeRow(row) {
   };
 }
 
+/* ================== CONTADORES ANIMADOS ================== */
+const EASE_OUT_CUBIC = t => 1 - Math.pow(1 - t, 3);
+
+/** Anima el texto numérico de un elemento hasta 'to'. Guarda el último valor en data-value. */
+function animateNumber(el, to, { from, duration = 800, formatter } = {}) {
+  if (!el) return;
+  const start = performance.now();
+  const fromVal = typeof from === "number" ? from : (parseFloat(el.dataset.value) || 0);
+  const fmt = formatter || (n => Math.round(n).toLocaleString("es-AR"));
+
+  if (el._anim) cancelAnimationFrame(el._anim);
+
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const val = fromVal + (to - fromVal) * EASE_OUT_CUBIC(t);
+    el.textContent = fmt(val);
+    if (t < 1) {
+      el._anim = requestAnimationFrame(frame);
+    } else {
+      el.dataset.value = String(to);
+    }
+  }
+  el._anim = requestAnimationFrame(frame);
+}
+
+/** Convierte "Label XX" en "Label <span class=num>XX</span>" y anima solo el número. */
+function animateLabeledCounter(elId, label, to, opts = {}) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  let num = el.querySelector(".num");
+  if (!num) {
+    el.innerHTML = `${label}<span class="num">0</span>`;
+    num = el.querySelector(".num");
+  } else {
+    // aseguro que el label sea correcto
+    el.firstChild.nodeValue = label;
+  }
+  animateNumber(num, to, opts);
+}
+
+/** Anima todos los <span class="num" data-target="..."> dentro de un contenedor. */
+function animateNumbersIn(container) {
+  if (!container) return;
+  container.querySelectorAll(".num[data-target]").forEach(span => {
+    const target = parseFloat(span.dataset.target) || 0;
+    animateNumber(span, target, { duration: 700 });
+    span.removeAttribute("data-target");
+  });
+}
+/* ========================================================= */
+
 // -------- Contadores (globales) --------
 function actualizarContadores(base = state.allData) {
   const hoy  = new Date();
@@ -93,9 +144,10 @@ function actualizarContadores(base = state.allData) {
   const vuelosMes  = base.filter(f => { const d = parseDateFlexible(f.Fecha); return d && d.getMonth() === mes && d.getFullYear() === anio; }).length;
   const vuelosAnio = base.filter(f => { const d = parseDateFlexible(f.Fecha); return d && d.getFullYear() === anio; }).length;
 
-  document.getElementById("vuelosDia").textContent  = `Vuelos hoy: ${vuelosHoy}`;
-  document.getElementById("vuelosMes").textContent  = `Vuelos este mes: ${vuelosMes}`;
-  document.getElementById("vuelosAnio").textContent = `Vuelos este año: ${vuelosAnio}`;
+  // ANIMADOS
+  animateLabeledCounter("vuelosDia",  "Vuelos hoy: ",       vuelosHoy,  { duration: 800 });
+  animateLabeledCounter("vuelosMes",  "Vuelos este mes: ",  vuelosMes,  { duration: 900 });
+  animateLabeledCounter("vuelosAnio", "Vuelos este año: ",  vuelosAnio, { duration: 1000 });
 }
 
 // -------- KPIs --------
@@ -115,8 +167,10 @@ function setList(targetId, pairs) {
   const el = document.getElementById(targetId);
   if (!el) return;
   el.innerHTML = pairs.length
-    ? pairs.map(([name, c]) => `<li>${name} — <strong>${c}</strong></li>`).join('')
+    ? pairs.map(([name, c]) => `<li>${name} — <strong class="num" data-target="${c}">0</strong></li>`).join('')
     : `<li>—</li>`;
+  // animar los números del top
+  animateNumbersIn(el);
 }
 function updateKPIs(viewData) {
   const total      = viewData.length;
@@ -126,12 +180,10 @@ function updateKPIs(viewData) {
   const topEscalas    = topN(countBy(viewData, 'Escala'), 3);
   const topMatriculas = topN(countBy(viewData, 'Matricula'), 3);
 
-  const elTotal = document.getElementById('kpiTotal');
-  const elEsc   = document.getElementById('kpiEscalas');
-  const elMat   = document.getElementById('kpiMatriculas');
-  if (elTotal) elTotal.textContent = total;
-  if (elEsc)   elEsc.textContent   = escalas;
-  if (elMat)   elMat.textContent   = matriculas;
+  // ANIMADOS
+  animateNumber(document.getElementById('kpiTotal'),      total,      { duration: 700 });
+  animateNumber(document.getElementById('kpiEscalas'),    escalas,    { duration: 800 });
+  animateNumber(document.getElementById('kpiMatriculas'), matriculas, { duration: 900 });
 
   setList('kpiTopEscalas', topEscalas);
   setList('kpiTopMatriculas', topMatriculas);
@@ -161,7 +213,7 @@ function drawSparkline(viewData) {
   const scaleY = (val) => h - pad - (val / max) * (h - pad * 2);
 
   const points = counts.map((c, i) => `${pad + i * stepX},${scaleY(c)}`).join(' ');
-  const bars = counts.map((c, i) => {
+  const dots = counts.map((c, i) => {
     const x = pad + i * stepX;
     const yb = scaleY(c);
     return `<circle cx="${x}" cy="${yb}" r="1.5"></circle>`;
@@ -170,7 +222,7 @@ function drawSparkline(viewData) {
   el.innerHTML = `
     <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none">
       <polyline fill="none" stroke="currentColor" stroke-width="1.5" points="${points}"></polyline>
-      ${bars}
+      ${dots}
     </svg>
   `;
 }
