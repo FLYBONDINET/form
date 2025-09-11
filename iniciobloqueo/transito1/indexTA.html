@@ -128,7 +128,7 @@
     </div>
   </section>
 
-    <!-- Asistencias -->
+  <!-- Asistencias -->
   <section class="card">
     <div class="legend">Asistencias<span class="icon">+</span></div>
     <div class="card-content">
@@ -152,6 +152,9 @@
       <textarea id="Observaciones" placeholder="Anotaciones operativas, novedades, etc."></textarea>
     </div>
   </section>
+
+  <!-- Campo oculto para email -->
+  <input type="hidden" id="Email_Usuario" name="Email_Usuario" />
 </main>
 
 <div class="bar">
@@ -177,52 +180,61 @@
   }
 
   function irAtras() {
-    window.history.back(); // o: window.location.href = "menu.html";
+    window.history.back();
   }
 
   // ======= TEMA: Auto noche 19:00–06:00 + toggle manual =======
   (function () {
     const ROOT = document.documentElement || document.body;
     const BTN = document.getElementById('toggleTheme');
-    const LOCK_KEY = 'themeLockedThisSession'; // 'true' si el usuario tocó el botón en esta sesión
-    const THEME_ATTR = 'data-theme';           // 'day' | 'night'
+    const LOCK_KEY = 'themeLockedThisSession';
+    const THEME_ATTR = 'data-theme';
 
     function isNight(d = new Date()) {
-      const h = d.getHours(); // hora local
-      return (h >= 19 || h < 6); // Noche: 19–23 y 0–5
+      const h = d.getHours();
+      return (h >= 19 || h < 6);
     }
 
     function applyTheme(theme) {
       ROOT.setAttribute(THEME_ATTR, theme);
-      // (Opcional) Actualizar texto del botón
-      if (BTN) BTN.textContent = theme === 'body' ? 'Día/Noche' : 'Día/Noche';
-      // Si quisieras mostrar el estado, podrías poner:
-      // BTN.textContent = theme === 'night' ? 'Cambiar a Día' : 'Cambiar a Noche';
+      if (BTN) BTN.textContent = 'Día/Noche';
     }
 
     function autoApplyIfUnlocked() {
-      if (sessionStorage.getItem(LOCK_KEY) === 'true') return; // usuario eligió manual en esta sesión
+      if (sessionStorage.getItem(LOCK_KEY) === 'true') return;
       applyTheme(isNight() ? 'night' : 'day');
     }
 
-    // Inicial: auto según hora
     autoApplyIfUnlocked();
-
-    // Revisión periódica (cada 60s) para cambiar automáticamente si no está bloqueado
     setInterval(autoApplyIfUnlocked, 60 * 1000);
 
-    // Toggle manual: bloquea auto para esta sesión
     if (BTN) {
       BTN.addEventListener('click', () => {
         const current = ROOT.getAttribute(THEME_ATTR) || (isNight() ? 'night' : 'day');
         const next = current === 'body' ? 'day' : 'night';
         applyTheme(next);
-        sessionStorage.setItem(LOCK_KEY, 'false');
+        sessionStorage.setItem(LOCK_KEY, 'true');
       });
     }
   })();
-</script>
 
+  // ======= CARGA EMAIL EN CAMPO OCULTO =======
+  (function poblarEmailOculto() {
+    const sesionRaw = localStorage.getItem('usuarioActivo');
+    let email = '';
+    if (sesionRaw) {
+      try {
+        const sesion = JSON.parse(sesionRaw);
+        email = sesion?.email || '';
+      } catch {
+        email = sesionRaw || '';
+      }
+    }
+    const input = document.getElementById('Email_Usuario');
+    if (input) input.value = email;
+    window.__EMAIL_USUARIO_ACTIVO__ = email;
+  })();
+</script>
 
 </body>
 </html>

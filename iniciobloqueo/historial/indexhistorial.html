@@ -1,44 +1,112 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard Profesional de Vuelos</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <!-- Logo -->
-  <img src="assets/logo.png" alt="Logo Flybondi" class="logo">
-  
+  <img src="assets/logo.png" alt="Logo Flybondi" class="logo" />
+
+  <!-- Top bar #1 (volver) -->
+<button class="btn back" onclick="irAtras()">
+  <span class="material-icons">arrow_back</span>
+  Atrás
+</button>
+
+  <!-- Top bar #2 (modo / sesión / contadores) -->
   <div class="top-bar">
     <button class="mode-btn" id="toggleMode">Modo Noche</button>
-    
-    <!-- Botón de cierre de sesión -->
+
     <button class="mode-btn" onclick="cerrarSesion()">Cerrar sesión</button>
-    
+
     <div class="contadores" id="contadores">
       <div class="contador" id="vuelosDia">Vuelos hoy: 0</div>
       <div class="contador" id="vuelosMes">Vuelos este mes: 0</div>
       <div class="contador" id="vuelosAnio">Vuelos este año: 0</div>
+      <div class="contador" id="usuariosActivos">Usuarios activos: -</div>
     </div>
   </div>
 
-  <div class="table-container">
-    <div class="filter-container">
-      <span class="material-icons">search</span>
-      <input type="text" id="busqueda" placeholder="Filtrar por cualquier columna...">
+  <!-- Alertas -->
+  <div id="alert" class="alert" hidden></div>
+
+  <!-- KPIs -->
+  <section class="kpi-container">
+    <div class="kpi">
+      <div class="kpi-title">Vuelos (vista)</div>
+      <div class="kpi-value" id="kpiTotal">0</div>
     </div>
+    <div class="kpi">
+      <div class="kpi-title">Escalas únicas</div>
+      <div class="kpi-value" id="kpiEscalas">0</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Matrículas únicas</div>
+      <div class="kpi-value" id="kpiMatriculas">0</div>
+    </div>
+    <div class="kpi-list">
+      <div class="kpi-title">Top Escalas</div>
+      <ol id="kpiTopEscalas"></ol>
+    </div>
+    <div class="kpi-list">
+      <div class="kpi-title">Top Matrículas</div>
+      <ol id="kpiTopMatriculas"></ol>
+    </div>
+    <div class="kpi kpi-chart">
+      <div class="kpi-title">Vuelos por día (mes actual)</div>
+      <div id="kpiSparkline" class="sparkline"></div>
+    </div>
+  </section>
+
+  <!-- Filtros -->
+  <section class="filters-container">
+    <div class="filter-item wide">
+      <span class="material-icons">search</span>
+      <input type="text" id="busqueda" placeholder="Buscar por cualquier columna..." />
+    </div>
+
+    <div class="filter-item">
+      <label for="fDesde">Desde</label>
+      <input type="date" id="fDesde" />
+    </div>
+    <div class="filter-item">
+      <label for="fHasta">Hasta</label>
+      <input type="date" id="fHasta" />
+    </div>
+
+    <div class="filter-item">
+      <label for="fEscala">Escala</label>
+      <select id="fEscala"><option value="">Todas</option></select>
+    </div>
+
+    <div class="filter-item">
+      <label for="fMatricula">Matrícula</label>
+      <select id="fMatricula"><option value="">Todas</option></select>
+    </div>
+
+    <div class="filter-item">
+      <button id="btnLimpiarFiltros" class="mode-btn secondary">
+        <span class="material-icons">filter_alt_off</span> Limpiar
+      </button>
+    </div>
+  </section>
+
+  <!-- Tabla -->
+  <div class="table-container">
     <div class="table-scroll">
       <table id="tablaVuelos">
         <thead>
           <tr>
-            <th data-column="Fecha">Fecha <span class="material-icons"></span></th>
-            <th data-column="Escala">Escala <span class="material-icons"></span></th>
-            <th data-column="Matricula">Matricula <span class="material-icons"></span></th>
-            <th data-column="LLegada Numero Vuelo">LLegada Numero Vuelo <span class="material-icons"></span></th>
-            <th data-column="Salida Numero Vuelo">Salida Numero Vuelo <span class="material-icons"></span></th>
+            <th data-column="Fecha">Fecha <span class="material-icons">unfold_more</span></th>
+            <th data-column="Escala">Escala <span class="material-icons">unfold_more</span></th>
+            <th data-column="Matricula">Matricula <span class="material-icons">unfold_more</span></th>
+            <th data-column="LLegada Numero Vuelo">LLegada Numero Vuelo <span class="material-icons">unfold_more</span></th>
+            <th data-column="Salida Numero Vuelo">Salida Numero Vuelo <span class="material-icons">unfold_more</span></th>
           </tr>
         </thead>
         <tbody>
@@ -52,14 +120,10 @@
   <script src="js/main.js"></script>
   <script src="js/auth.js"></script>
 
-  <!-- Función de cierre de sesión -->
   <script>
-    function cerrarSesion() {
-      // Limpiar datos de sesión/local
-      localStorage.clear();
-      sessionStorage.clear();
-
-      // Redirigir al index.html de la raíz
+    function irAtras(){ window.history.back(); }
+    function cerrarSesion(){
+      localStorage.clear(); sessionStorage.clear();
       window.location.href = "../index.html";
     }
   </script>

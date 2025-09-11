@@ -1,122 +1,367 @@
-const urlVuelos = "https://script.google.com/macros/s/AKfycbx1nIYYMsgd-a7V02QLzT6sBoHlQHkJ9Bt1gbBNCt9wIEP3dIzujYjiUAZ9M0cBVS1c/exec";
+// Endpoints
+const urlVuelos   = "https://script.google.com/macros/s/AKfycbxHzJ1tbXIn6HsvGQ79IaVsEYrXnIJADceV00YyDANRdLbutaSNeBHOzt2U8GDpip9_/exec";
 const urlUsuarios = "https://script.google.com/macros/s/AKfycbwEz4pfgHUsmar2CNGaplmlgYDrsBzc0T8-0fS9Bj96y0eSeb1vTr3Lao51dIvIt4HC/exec";
 
-const tbody = document.querySelector("#tablaVuelos tbody");
+// DOM
+const tbody       = document.querySelector("#tablaVuelos tbody");
 const inputFiltro = document.getElementById("busqueda");
-const toggleBtn = document.getElementById("toggleMode");
-const bodyEl = document.body;
-let tablaData = [];
+const toggleBtn   = document.getElementById("toggleMode");
+const bodyEl      = document.body;
+const alertEl     = document.getElementById("alert");
 
-// Generar SessionID aleatorio para el usuario
-const sessionId = '_' + Math.random().toString(36).substr(2, 9);
+const fDesde     = document.getElementById("fDesde");
+const fHasta     = document.getElementById("fHasta");
+const fEscala    = document.getElementById("fEscala");
+const fMatricula = document.getElementById("fMatricula");
+const btnClear   = document.getElementById("btnLimpiarFiltros");
 
-function formatFecha(fechaStr){
-  if(!fechaStr) return "";
-  const date = new Date(fechaStr);
-  if(isNaN(date)) return fechaStr;
-  const dd = String(date.getDate()).padStart(2,"0");
-  const mm = String(date.getMonth()+1).padStart(2,"0");
-  const yyyy = date.getFullYear();
+let state = {
+  allData: [],
+  filtered: [],
+  sort: { key: null, dir: 1 } // 1=asc, -1=desc
+};
+
+// ------- Utils -------
+const sessionId = '_' + Math.random().toString(36).slice(2, 11);
+
+function showAlert(msg, type = "error") {
+  if (!alertEl) return;
+  alertEl.textContent = msg;
+  alertEl.className = `alert ${type}`;
+  alertEl.hidden = false;
+  setTimeout(() => (alertEl.hidden = true), 6000);
+}
+
+function parseDateFlexible(s) {
+  if (!s) return null;
+  if (s instanceof Date) return isNaN(s) ? null : s;
+  // ISO y formats comunes
+  const iso = new Date(s);
+  if (!isNaN(iso)) return iso;
+  const m = String(s).match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m) {
+    const dd = +m[1], mm = +m[2] - 1, yyyy = +m[3];
+    const d = new Date(yyyy, mm, dd);
+    return isNaN(d) ? null : d;
+  }
+  return null;
+}
+
+function sameYMD(a, b) {
+  return a.getFullYear() === b.getFullYear() &&
+         a.getMonth() === b.getMonth() &&
+         a.getDate() === b.getDate();
+}
+
+function formatFecha(s) {
+  const d = parseDateFlexible(s);
+  if (!d) return s || "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
   return `${dd}-${mm}-${yyyy}`;
 }
 
-function actualizarContadores(){
-  const hoy = new Date();
-  const dia = hoy.toDateString();
-  const mes = hoy.getMonth();
+function pick(obj, keys, def = "") {
+  for (const k of keys) {
+    if (obj && obj[k] != null && obj[k] !== "") return obj[k];
+  }
+  return def;
+}
+
+function normalizeRow(row) {
+  return {
+    Fecha: pick(row, ["Fecha", "FECHA", "fecha"]),
+    Escala: pick(row, ["Escala", "ESCALA", "escala"]),
+    Matricula: pick(row, ["Matricula", "Matrícula", "MATRICULA", "matricula"]),
+    "LLegada Numero Vuelo": pick(row, [
+      "LLegada Numero Vuelo", "Llegada Numero Vuelo", "Llegada_Numero_Vuelo", "llegada_numero_vuelo"
+    ]),
+    "Salida Numero Vuelo": pick(row, [
+      "Salida Numero Vuelo", "Salida_Numero_Vuelo", "salida_numero_vuelo"
+    ])
+  };
+}
+
+// -------- Contadores (globales) --------
+function actualizarContadores(base = state.allData) {
+  const hoy  = new Date();
+  const mes  = hoy.getMonth();
   const anio = hoy.getFullYear();
 
-  const vuelosHoy = tablaData.filter(f=>new Date(f.Fecha).toDateString()===dia).length;
-  const vuelosMes = tablaData.filter(f=>new Date(f.Fecha).getMonth()===mes && new Date(f.Fecha).getFullYear()===anio).length;
-  const vuelosAnio = tablaData.filter(f=>new Date(f.Fecha).getFullYear()===anio).length;
+  const vuelosHoy  = base.filter(f => { const d = parseDateFlexible(f.Fecha); return d && sameYMD(d, hoy); }).length;
+  const vuelosMes  = base.filter(f => { const d = parseDateFlexible(f.Fecha); return d && d.getMonth() === mes && d.getFullYear() === anio; }).length;
+  const vuelosAnio = base.filter(f => { const d = parseDateFlexible(f.Fecha); return d && d.getFullYear() === anio; }).length;
 
-  document.getElementById("vuelosDia").textContent = `Vuelos hoy: ${vuelosHoy}`;
-  document.getElementById("vuelosMes").textContent = `Vuelos este mes: ${vuelosMes}`;
+  document.getElementById("vuelosDia").textContent  = `Vuelos hoy: ${vuelosHoy}`;
+  document.getElementById("vuelosMes").textContent  = `Vuelos este mes: ${vuelosMes}`;
   document.getElementById("vuelosAnio").textContent = `Vuelos este año: ${vuelosAnio}`;
 }
 
-// Renderizar tabla
-function renderTabla(data){
-  tbody.innerHTML="";
-  if(!data || data.length===0){
-    tbody.innerHTML=`<tr><td colspan="5">No hay datos disponibles</td></tr>`;
-    return;
+// -------- KPIs --------
+function countBy(arr, key) {
+  const map = new Map();
+  for (const it of arr) {
+    const v = (it[key] || '').toString().trim();
+    if (!v) continue;
+    map.set(v, (map.get(v) || 0) + 1);
   }
-  data.forEach(fila=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`
-      <td>${formatFecha(fila["Fecha"])}</td>
-      <td>${fila["Escala"]||""}</td>
-      <td>${fila["Matricula"]||""}</td>
-      <td>${fila["LLegada Numero Vuelo"]||""}</td>
-      <td>${fila["Salida Numero Vuelo"]||""}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-  actualizarContadores();
+  return Array.from(map.entries()); // [ [valor, count], ... ]
+}
+function topN(pairs, n = 3) {
+  return pairs.sort((a,b) => b[1] - a[1]).slice(0, n);
+}
+function setList(targetId, pairs) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  el.innerHTML = pairs.length
+    ? pairs.map(([name, c]) => `<li>${name} — <strong>${c}</strong></li>`).join('')
+    : `<li>—</li>`;
+}
+function updateKPIs(viewData) {
+  const total      = viewData.length;
+  const escalas    = new Set(viewData.map(x => (x.Escala || '').trim()).filter(Boolean)).size;
+  const matriculas = new Set(viewData.map(x => (x.Matricula || '').trim()).filter(Boolean)).size;
+
+  const topEscalas    = topN(countBy(viewData, 'Escala'), 3);
+  const topMatriculas = topN(countBy(viewData, 'Matricula'), 3);
+
+  const elTotal = document.getElementById('kpiTotal');
+  const elEsc   = document.getElementById('kpiEscalas');
+  const elMat   = document.getElementById('kpiMatriculas');
+  if (elTotal) elTotal.textContent = total;
+  if (elEsc)   elEsc.textContent   = escalas;
+  if (elMat)   elMat.textContent   = matriculas;
+
+  setList('kpiTopEscalas', topEscalas);
+  setList('kpiTopMatriculas', topMatriculas);
+
+  drawSparkline(viewData);
 }
 
-// Fetch datos de vuelos
-fetch(urlVuelos)
-.then(res=>res.json())
-.then(data=>{
-  tablaData=data;
-  renderTabla(tablaData);
-})
-.catch(err=>{
-  console.error(err);
-  tbody.innerHTML=`<tr><td colspan="5">Error al cargar los datos</td></tr>`;
-});
+// Sparkline: vuelos por día del mes actual
+function drawSparkline(viewData) {
+  const el = document.getElementById('kpiSparkline');
+  if (!el) return;
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
 
-// Filtro
-inputFiltro.addEventListener("input",()=>{
-  const val=inputFiltro.value.toLowerCase();
-  const filtrado=tablaData.filter(f=>Object.values(f).some(v=>String(v).toLowerCase().includes(val)));
-  renderTabla(filtrado);
-});
+  const counts = new Array(daysInMonth).fill(0);
+  for (const r of viewData) {
+    const d = parseDateFlexible(r.Fecha);
+    if (d && d.getFullYear() === y && d.getMonth() === m) {
+      counts[d.getDate() - 1]++;
+    }
+  }
 
-// Ordenamiento
-document.querySelectorAll("th").forEach(th=>{
-  th.addEventListener("click",()=>{
-    const col=th.getAttribute("data-column");
-    const isAsc=th.classList.contains("asc");
-    document.querySelectorAll("th").forEach(h=>h.classList.remove("asc","desc"));
-    th.classList.toggle(isAsc?"desc":"asc");
-    tablaData.sort((a,b)=>{
-      let va=a[col]||"", vb=b[col]||"";
-      if(col==="Fecha"){ va=new Date(va); vb=new Date(vb);}
-      return (va>vb?1:(va<vb?-1:0)) * (isAsc?-1:1);
+  const w = 280, h = 60, pad = 4;
+  const max = Math.max(1, ...counts);
+  const stepX = (w - pad * 2) / (daysInMonth - 1 || 1);
+  const scaleY = (val) => h - pad - (val / max) * (h - pad * 2);
+
+  const points = counts.map((c, i) => `${pad + i * stepX},${scaleY(c)}`).join(' ');
+  const bars = counts.map((c, i) => {
+    const x = pad + i * stepX;
+    const yb = scaleY(c);
+    return `<circle cx="${x}" cy="${yb}" r="1.5"></circle>`;
+  }).join('');
+
+  el.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none">
+      <polyline fill="none" stroke="currentColor" stroke-width="1.5" points="${points}"></polyline>
+      ${bars}
+    </svg>
+  `;
+}
+
+// -------- Render tabla --------
+function renderTabla(data) {
+  tbody.innerHTML = "";
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5">No hay datos disponibles</td></tr>`;
+    updateKPIs([]);
+    actualizarContadores(state.allData); // contadores globales
+    return;
+  }
+  for (const fila of data) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${formatFecha(fila.Fecha)}</td>
+      <td>${fila.Escala || ""}</td>
+      <td>${fila.Matricula || ""}</td>
+      <td>${fila["LLegada Numero Vuelo"] || ""}</td>
+      <td>${fila["Salida Numero Vuelo"] || ""}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+  updateKPIs(data);
+  actualizarContadores(state.allData); // si querés que siga la vista: pasar 'data'
+}
+
+// -------- Fetch robusto --------
+async function fetchJSON(url) {
+  const res = await fetch(url, { cache: "no-store" });
+  const ctype = res.headers.get("content-type") || "";
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} en ${url} — ${txt.slice(0, 200)}`);
+  }
+  if (ctype.includes("application/json")) {
+    return res.json();
+  } else {
+    const txt = await res.text();
+    try { return JSON.parse(txt); }
+    catch { throw new Error(`Respuesta no JSON desde ${url}. Primeros 300 chars:\n${txt.slice(0, 300)}`); }
+  }
+}
+
+function coerceArray(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (raw && Array.isArray(raw.data)) return raw.data;
+  if (raw && Array.isArray(raw.rows)) return raw.rows;
+  return [];
+}
+
+// -------- Filtros & sort --------
+function applyFilters() {
+  const q = (inputFiltro.value || "").toLowerCase().trim();
+  const dDesde = fDesde.value ? new Date(fDesde.value) : null;
+  const dHasta = fHasta.value ? new Date(fHasta.value) : null;
+  const escalaSel = (fEscala.value || "").toLowerCase().trim();
+  const matSel    = (fMatricula.value || "").toLowerCase().trim();
+
+  let data = state.allData.filter(r => {
+    // texto libre
+    const hitsText = !q || Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q));
+
+    // fecha
+    const d = parseDateFlexible(r.Fecha);
+    const hitsFecha = (!dDesde || (d && d >= dDesde)) &&
+                      (!dHasta || (d && d <= dHasta));
+
+    // combos
+    const hitsEsc = !escalaSel || String(r.Escala || "").toLowerCase() === escalaSel;
+    const hitsMat = !matSel    || String(r.Matricula || "").toLowerCase() === matSel;
+
+    return hitsText && hitsFecha && hitsEsc && hitsMat;
+  });
+
+  // sort actual
+  if (state.sort.key) {
+    const { key, dir } = state.sort;
+    data.sort((a, b) => {
+      let va = a[key] ?? "", vb = b[key] ?? "";
+      if (key === "Fecha") {
+        va = parseDateFlexible(va) || new Date(0);
+        vb = parseDateFlexible(vb) || new Date(0);
+      }
+      return (va > vb ? 1 : (va < vb ? -1 : 0)) * dir;
     });
-    renderTabla(tablaData);
+  }
+
+  state.filtered = data;
+  renderTabla(state.filtered);
+}
+
+function buildSelectOptions() {
+  const escSet = new Set();
+  const matSet = new Set();
+  for (const r of state.allData) {
+    if (r.Escala)    escSet.add(r.Escala);
+    if (r.Matricula) matSet.add(r.Matricula);
+  }
+  const toOptions = (set) =>
+    ["", ...Array.from(set).sort()].map(v => `<option value="${v}">${v || 'Todas'}</option>`).join("");
+
+  if (fEscala)    fEscala.innerHTML    = toOptions(escSet);
+  if (fMatricula) fMatricula.innerHTML = toOptions(matSet);
+}
+
+// -------- Carga inicial --------
+async function cargarVuelos() {
+  try {
+    const raw = await fetchJSON(urlVuelos);
+
+    // si el endpoint devolvió {ok:false, error: "..."} mostralo
+    if (raw && raw.ok === false) {
+      console.error(raw.error);
+      showAlert(`Error del servidor: ${raw.error}`, "error");
+      tbody.innerHTML = `<tr><td colspan="5">Error del servidor</td></tr>`;
+      return;
+    }
+
+    const arr = coerceArray(raw);
+    state.allData = arr.map(normalizeRow);
+    buildSelectOptions();
+    state.sort = { key: "Fecha", dir: -1 }; // default: fecha desc
+    applyFilters();
+  } catch (err) {
+    console.error(err);
+    showAlert(err.message || "Error al cargar los datos", "error");
+    tbody.innerHTML = `<tr><td colspan="5">Error al cargar los datos</td></tr>`;
+  }
+}
+
+// -------- Eventos --------
+inputFiltro.addEventListener("input", applyFilters);
+[fDesde, fHasta, fEscala, fMatricula].forEach(el => el && el.addEventListener("change", applyFilters));
+
+btnClear.addEventListener("click", () => {
+  inputFiltro.value = "";
+  fDesde.value = "";
+  fHasta.value = "";
+  fEscala.value = "";
+  fMatricula.value = "";
+  applyFilters();
+});
+
+const sortKeyMap = {
+  "Fecha": "Fecha",
+  "Escala": "Escala",
+  "Matricula": "Matricula",
+  "LLegada Numero Vuelo": "LLegada Numero Vuelo",
+  "Salida Numero Vuelo": "Salida Numero Vuelo",
+};
+
+document.querySelectorAll("th").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = sortKeyMap[th.getAttribute("data-column")] || null;
+    if (!key) return;
+    const isCurrent = state.sort.key === key;
+    state.sort = { key, dir: isCurrent ? state.sort.dir * -1 : 1 };
+    applyFilters();
   });
 });
 
 // Modo noche/día
-toggleBtn.addEventListener("click",()=>{
+toggleBtn.addEventListener("click", () => {
   bodyEl.classList.toggle("night");
   toggleBtn.textContent = bodyEl.classList.contains("night") ? "Modo Día" : "Modo Noche";
 });
 
-// ----- USUARIOS ACTIVOS -----
+// Usuarios activos (tolerante)
 function actualizarUsuarioActivo() {
   fetch(urlUsuarios, {
     method: "POST",
-    body: JSON.stringify({sessionId}),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId }),
   }).catch(err => console.error(err));
 }
-
-function obtenerUsuariosActivos(){
+function obtenerUsuariosActivos() {
+  const el = document.getElementById("usuariosActivos");
+  if (!el) return;
   fetch(urlUsuarios)
-  .then(res=>res.json())
-  .then(data=>{
-    document.getElementById("usuariosActivos").textContent = `Usuarios activos: ${data.activos}`;
-  });
+    .then(res => res.json())
+    .then(data => { el.textContent = `Usuarios activos: ${data.activos ?? "-"}`; })
+    .catch(err => console.error(err));
 }
 
-// Ciclo cada 10s
+// Boot
+cargarVuelos();
 actualizarUsuarioActivo();
 obtenerUsuariosActivos();
-setInterval(()=>{
+setInterval(() => {
   actualizarUsuarioActivo();
   obtenerUsuariosActivos();
-},10000);
+}, 10000);

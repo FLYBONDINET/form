@@ -269,7 +269,8 @@ const allFields = [
   "AM / AA Interno",
   "DM / DA  Interno",
   "CÓDIGO DEMORA",
-  "Observaciones"
+  "Observaciones",
+  "Email_Usuario"
 ];
 COLS.push(...allFields);
 

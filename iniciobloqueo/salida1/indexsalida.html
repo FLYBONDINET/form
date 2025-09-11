@@ -111,7 +111,7 @@
     </div>
   </section>
 
-    <!-- Asistencias -->
+  <!-- Asistencias -->
   <section class="card">
     <div class="legend">Asistencias<span class="icon">+</span></div>
     <div class="card-content">
@@ -134,6 +134,9 @@
       <textarea id="Observaciones" placeholder="Anotaciones operativas, novedades, etc."></textarea>
     </div>
   </section>
+
+  <!-- Campo oculto para email -->
+  <input type="hidden" id="Email_Usuario" name="Email_Usuario" />
 </main>
 
 <div class="bar">
@@ -169,13 +172,14 @@
     const LOCK_KEY = 'themeLockedThisSession'; // 'true' si el usuario tocó el botón en esta sesión
     const THEME_ATTR = 'data-theme';           // 'day' | 'night'
 
+    function isNight(d = new Date()) {
+      const h = d.getHours(); // hora local
+      return (h >= 19 || h < 6); // Noche: 19–23 y 0–5
+    }
 
     function applyTheme(theme) {
       ROOT.setAttribute(THEME_ATTR, theme);
-      // (Opcional) Actualizar texto del botón
-      if (BTN) BTN.textContent = theme === 'day' ? 'Día/Noche' : 'Día/Noche';
-      // Si quisieras mostrar el estado, podrías poner:
-      // BTN.textContent = theme === 'night' ? 'Cambiar a Día' : 'Cambiar a Noche';
+      if (BTN) BTN.textContent = 'Día/Noche';
     }
 
     function autoApplyIfUnlocked() {
@@ -199,8 +203,25 @@
       });
     }
   })();
-</script>
 
+  // ======= CARGA EMAIL EN CAMPO OCULTO =======
+  (function poblarEmailOculto() {
+    const sesionRaw = localStorage.getItem('usuarioActivo');
+    let email = '';
+    if (sesionRaw) {
+      try {
+        const sesion = JSON.parse(sesionRaw);
+        email = sesion?.email || '';
+      } catch {
+        email = sesionRaw || '';
+      }
+    }
+    const input = document.getElementById('Email_Usuario');
+    if (input) input.value = email;
+    // disponible para JS que arme JSON manual:
+    window.__EMAIL_USUARIO_ACTIVO__ = email;
+  })();
+</script>
 
 </body>
 </html>
