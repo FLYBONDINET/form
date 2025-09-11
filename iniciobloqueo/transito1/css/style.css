@@ -312,7 +312,7 @@ textarea {
 #asuBlock.show {
   max-height: 1000px;
   opacity: 1;
-  background: var(--accordion-bg);
+  background: var(body);
   padding: 12px;
   border-radius: 12px;
   transition: max-height 0.3s ease, opacity 0.3s ease, background 0.5s ease;

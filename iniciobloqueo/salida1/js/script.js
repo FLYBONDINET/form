@@ -21,7 +21,7 @@ const TIME_FIELDS = [
 ];
 
 const INTERNAL_FIELDS = [
-  "Asistencias salida","GPU Interno","TL Interno","CT INTERNO","TP INTERNO","BR INTERNO",
+  "GPU Interno","TL Interno","CT INTERNO","TP INTERNO","BR INTERNO",
   "ESCALERA DELANTERA INTERNO","ESCALERA TRASERA INTERNO","CM INTERNOS","MICROS INTERNOS","AM / AA Interno",
   "DM / DA  Interno","CÓDIGO DEMORA"
 ];
@@ -253,7 +253,7 @@ const allFields = [
   "BT Cierre",
   "Pushback", 
   "Asistencias Llegada",
-  "Asistencias salida",  
+  "Asistenciassalida",  
   "GPU Interno",
   "TL Interno",
   "CT INTERNO",

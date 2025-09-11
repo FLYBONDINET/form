@@ -111,9 +111,17 @@
     </div>
   </section>
 
-  <!-- Asistencias e internos -->
+    <!-- Asistencias -->
   <section class="card">
-    <div class="legend">Asistencias e internos <span class="icon">+</span></div>
+    <div class="legend">Asistencias<span class="icon">+</span></div>
+    <div class="card-content">
+        <div class="field col-3"><label for="Asistenciassalida">Asistencia salida</label><input type="number" min="0" id="Asistenciassalida" /></div>
+    </div>
+  </section>
+
+  <!-- internos -->
+  <section class="card">
+    <div class="legend">Internos <span class="icon">+</span></div>
     <div class="card-content">
       <div class="grid" id="internalGrid"></div>
     </div>
@@ -185,7 +193,7 @@
     if (BTN) {
       BTN.addEventListener('click', () => {
         const current = ROOT.getAttribute(THEME_ATTR) || (isNight() ? 'night' : 'day');
-        const next = current === 'day' ? 'day' : 'night';
+        const next = current === 'body' ? 'day' : 'night';
         applyTheme(next);
         sessionStorage.setItem(LOCK_KEY, 'false');
       });

@@ -6,21 +6,20 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHK1IUOfV6Sz3v
 
 const DESTINOS_IATA = [
   "AEP","AUQ","BRC","CNF","CNQ","COR","CRD","ENO","EZE","FTE","FLN","GIG",
-  "GRU","IGR","JUJ","MCZ","MDQ","MDZ","MVD","NQN","PDP","PMY","PSS","REL","RES",
-  "SDE","SLA","TUC","USH"
+  "GRU","IGR","JUJ","MCZ","MDQ","MDZ","MVD","NQN","PDP","PMY","REL","RES",
+  "SDE","SLA","TUC","USH","PSS"
 ];
 
 const MATRICULAS = ["LV-KJD","LV-KJE","LV-KAY","LV-KAH","LV-KJF","LV-KCD","LV-KCE","LV-HKN","LV-KHO","LV-KEF","LV-KEG","LV-KEH","LV-KDR","LV-KDQ","LY-MLJ","LY-VEL","LY-NVL","PR-MLD"];
 
 const TIME_FIELDS = [
-"Calzas Colocación","GPU Encendido","GPU Conexión aeronave",
+  "Calzas Colocación","GPU Encendido","GPU Conexión aeronave",
   "Escalera Delantera Adose","Escalera Trasera Adose","Pasarela Adose","BT Apertura","BD Apertura","BT Inicio Descarga",
-  "BT Fin Descarga","BD Inicio Descarga","BD Fin Descarga",
-  "BT Cierre","BD Cierre"
+  "BT Fin Descarga","BD Inicio Descarga","BD Fin Descarga","BT Cierre","BD Cierre"
 ];
 
 const INTERNAL_FIELDS = [
-  "Asistencias Llegada","GPU Interno","TL Interno","CT INTERNO",
+  "GPU Interno","TL Interno","CT INTERNO",
   "ESCALERA DELANTERA INTERNO","ESCALERA TRASERA INTERNO","CM INTERNOS","MICROS INTERNOS","AM / AA Interno",
   "DM / DA  Interno"
 ];
@@ -165,7 +164,7 @@ document.getElementById("toggleTheme").addEventListener("click", ()=>{
 /* ====================
    Dropdowns internos
 ==================== */
-const toggleDropdown = (btnId, divId, showText, hideText, bgColor="---bg")=>{
+const toggleDropdown = (btnId, divId, showText, hideText, bgColor="body")=>{
   const btn = document.getElementById(btnId);
   const div = document.getElementById(divId);
   btn.addEventListener("click", ()=>{
@@ -178,15 +177,9 @@ const toggleDropdown = (btnId, divId, showText, hideText, bgColor="---bg")=>{
     }
   });
 };
-toggleDropdown("toggleDropdown","extraDropdown","Llegada","Ocultar Opciones LLegada");
-toggleDropdown("toggleDropdown4","carga2","Carga en Llegada","Ocultar Opciones Carga");
+toggleDropdown("toggleDropdown2","salisa","Salida","Ocultar Opciones Salida");
+toggleDropdown("toggleDropdown3","carga1","Carga en Salida","Ocultar Opciones Carga");
 
-document.getElementById("toggleAsu").addEventListener("click", ()=>{
-  const asu = document.getElementById("asuBlock");
-  asu.classList.toggle("show");
-  const btn = document.getElementById("toggleAsu");
-  btn.textContent = asu.classList.contains("show") ? "Ocultar ASU" : "ASU";
-});
 
 /* ====================
    Guardado local + parcial (NAMESPACED)
@@ -239,19 +232,19 @@ const allFields = [
   "Pasarela Adose",
   "Pasarela Quite",
   "BD Apertura",
-  "BD Inicio Descarga",
+  "BD Comienzo Descarga",
   "BD Fin Descarga",
-  "BD Inicio Carga",
+  "BD Comienzo Carga",
   "BD Fin Carga",
   "BD Cierre",
   "BT Apertura",
-  "BT Inicio Descarga",
+  "BT Comienzo Descarga",
   "BT Fin Descarga",
   "BT Inicio Carga",
   "BT Fin Carga",
   "BT Cierre",
   "Pushback", 
-  "Asistencias Llegada",
+  "AsistenciasLlegada",
   "Asistencias salida",  
   "GPU Interno",
   "TL Interno",

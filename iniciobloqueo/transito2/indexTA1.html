@@ -109,7 +109,7 @@
             <option>No Aplica</option>
           </select>
         </div>
-        <div class="field col-3"><label for="Numero_de_precinto">Numero de precinto</label><input id="Numero_de_precinto" /></div>
+        <div class="field col-3"><label for="Numero_de_precinto">Numero de precinto</label><input type="number" min="0" id="Numero_de_precinto" /></div>
       </div>
     </div>
   </section>
@@ -128,9 +128,18 @@
     </div>
   </section>
 
-  <!-- Asistencias e internos -->
+    <!-- Asistencias -->
   <section class="card">
-    <div class="legend">Asistencias e internos <span class="icon">+</span></div>
+    <div class="legend">Asistencias<span class="icon">+</span></div>
+    <div class="card-content">
+        <div class="field col-3"><label for="Asistencias Llegada">Asistencia arribo</label><input type="number" min="0" id="Asistencias Llegada" /></div>
+        <div class="field col-3"><label for="Asistencias Salida">Asistencia salida</label><input type="number" min="0" id="Asistencias salida" /></div>
+    </div>
+  </section>
+
+  <!-- internos -->
+  <section class="card">
+    <div class="legend">Internos <span class="icon">+</span></div>
     <div class="card-content">
       <div class="grid" id="internalGrid"></div>
     </div>
@@ -206,7 +215,7 @@
     if (BTN) {
       BTN.addEventListener('click', () => {
         const current = ROOT.getAttribute(THEME_ATTR) || (isNight() ? 'night' : 'day');
-        const next = current === 'night' ? 'day' : 'night';
+        const next = current === 'body' ? 'day' : 'night';
         applyTheme(next);
         sessionStorage.setItem(LOCK_KEY, 'true');
       });

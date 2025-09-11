@@ -1,9 +1,9 @@
 :root {
   /* NIGHT (por defecto: 19–06) */
-  --bg:#f7b501d7;
-  --card:#f7b501d7;
-  --fg:#000000;
-  --muted:#000000;
+  --bg:#2a4474;       /* azul oscuro */
+  --card:#2a4474;
+  --fg:#fad97d;
+  --muted:#d4ba72;
   --accent:#ffcc00;
   --ok:#b9c0bb;
   --warn:#f59e0b;
@@ -20,10 +20,10 @@
 
 /* DAY (06–19) */
 [data-theme="day"] {
-  --bg:#2a4474;       /* azul oscuro */
-  --card:#2a4474;
-  --fg:#bb942a;
-  --muted:#bb942a;
+  --bg:#f7b501d7;       /* azul oscuro */
+  --card:#f7b501d7;
+  --fg:#000000;
+  --muted:#000000;
   --accent:#ffcc00;
   --input-bg:#ffffff;
   --border:#bb942a;
@@ -312,7 +312,7 @@ textarea {
 #asuBlock.show {
   max-height: 1000px;
   opacity: 1;
-  background: var(--accordion-bg);
+  background: var(body);
   padding: 12px;
   border-radius: 12px;
   transition: max-height 0.3s ease, opacity 0.3s ease, background 0.5s ease;
