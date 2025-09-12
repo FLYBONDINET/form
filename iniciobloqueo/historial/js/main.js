@@ -2,6 +2,9 @@
 const urlVuelos   = "https://script.google.com/macros/s/AKfycbxHzJ1tbXIn6HsvGQ79IaVsEYrXnIJADceV00YyDANRdLbutaSNeBHOzt2U8GDpip9_/exec";
 const urlUsuarios = "https://script.google.com/macros/s/AKfycbwEz4pfgHUsmar2CNGaplmlgYDrsBzc0T8-0fS9Bj96y0eSeb1vTr3Lao51dIvIt4HC/exec";
 
+// ===== Auto-refresh (ajustable) =====
+const AUTO_REFRESH_MS = 60 * 1000; // 60s (cambiá a 30*1000 ó 5*60*1000 si querés)
+
 // DOM
 const tbody       = document.querySelector("#tablaVuelos tbody");
 const inputFiltro = document.getElementById("busqueda");
@@ -35,7 +38,7 @@ function showAlert(msg, type = "error") {
 function parseDateFlexible(s) {
   if (!s) return null;
   if (s instanceof Date) return isNaN(s) ? null : s;
-  // ISO y formats comunes
+  // ISO y formatos comunes
   const iso = new Date(s);
   if (!isNaN(iso)) return iso;
   const m = String(s).match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
@@ -86,44 +89,30 @@ function normalizeRow(row) {
 /* ================== CONTADORES ANIMADOS ================== */
 const EASE_OUT_CUBIC = t => 1 - Math.pow(1 - t, 3);
 
-/** Anima el texto numérico de un elemento hasta 'to'. Guarda el último valor en data-value. */
 function animateNumber(el, to, { from, duration = 800, formatter } = {}) {
   if (!el) return;
   const start = performance.now();
   const fromVal = typeof from === "number" ? from : (parseFloat(el.dataset.value) || 0);
   const fmt = formatter || (n => Math.round(n).toLocaleString("es-AR"));
-
   if (el._anim) cancelAnimationFrame(el._anim);
-
   function frame(now) {
     const t = Math.min(1, (now - start) / duration);
     const val = fromVal + (to - fromVal) * EASE_OUT_CUBIC(t);
     el.textContent = fmt(val);
-    if (t < 1) {
-      el._anim = requestAnimationFrame(frame);
-    } else {
-      el.dataset.value = String(to);
-    }
+    if (t < 1) el._anim = requestAnimationFrame(frame);
+    else el.dataset.value = String(to);
   }
   el._anim = requestAnimationFrame(frame);
 }
 
-/** Convierte "Label XX" en "Label <span class=num>XX</span>" y anima solo el número. */
 function animateLabeledCounter(elId, label, to, opts = {}) {
   const el = document.getElementById(elId);
   if (!el) return;
-  let num = el.querySelector(".num");
-  if (!num) {
-    el.innerHTML = `${label}<span class="num">0</span>`;
-    num = el.querySelector(".num");
-  } else {
-    // aseguro que el label sea correcto
-    el.firstChild.nodeValue = label;
-  }
-  animateNumber(num, to, opts);
+  const current = el.querySelector(".num")?.textContent || "0";
+  el.innerHTML = `${label}<span class="num">${current}</span>`;
+  animateNumber(el.querySelector(".num"), to, opts);
 }
 
-/** Anima todos los <span class="num" data-target="..."> dentro de un contenedor. */
 function animateNumbersIn(container) {
   if (!container) return;
   container.querySelectorAll(".num[data-target]").forEach(span => {
@@ -158,7 +147,7 @@ function countBy(arr, key) {
     if (!v) continue;
     map.set(v, (map.get(v) || 0) + 1);
   }
-  return Array.from(map.entries()); // [ [valor, count], ... ]
+  return Array.from(map.entries());
 }
 function topN(pairs, n = 3) {
   return pairs.sort((a,b) => b[1] - a[1]).slice(0, n);
@@ -169,9 +158,9 @@ function setList(targetId, pairs) {
   el.innerHTML = pairs.length
     ? pairs.map(([name, c]) => `<li>${name} — <strong class="num" data-target="${c}">0</strong></li>`).join('')
     : `<li>—</li>`;
-  // animar los números del top
   animateNumbersIn(el);
 }
+
 function updateKPIs(viewData) {
   const total      = viewData.length;
   const escalas    = new Set(viewData.map(x => (x.Escala || '').trim()).filter(Boolean)).size;
@@ -180,7 +169,6 @@ function updateKPIs(viewData) {
   const topEscalas    = topN(countBy(viewData, 'Escala'), 3);
   const topMatriculas = topN(countBy(viewData, 'Matricula'), 3);
 
-  // ANIMADOS
   animateNumber(document.getElementById('kpiTotal'),      total,      { duration: 700 });
   animateNumber(document.getElementById('kpiEscalas'),    escalas,    { duration: 800 });
   animateNumber(document.getElementById('kpiMatriculas'), matriculas, { duration: 900 });
@@ -191,38 +179,81 @@ function updateKPIs(viewData) {
   drawSparkline(viewData);
 }
 
-// Sparkline: vuelos por día del mes actual
+// ===== Sparkline con días y valores =====
 function drawSparkline(viewData) {
   const el = document.getElementById('kpiSparkline');
   if (!el) return;
+
   const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth();
+  const y = now.getFullYear();
+  const m = now.getMonth();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
 
+  // Conteo por día del mes actual
   const counts = new Array(daysInMonth).fill(0);
   for (const r of viewData) {
     const d = parseDateFlexible(r.Fecha);
     if (d && d.getFullYear() === y && d.getMonth() === m) {
-      counts[d.getDate() - 1]++;
+      const idx = d.getDate() - 1;
+      if (idx >= 0 && idx < daysInMonth) counts[idx]++;
     }
   }
 
-  const w = 280, h = 60, pad = 4;
-  const max = Math.max(1, ...counts);
-  const stepX = (w - pad * 2) / (daysInMonth - 1 || 1);
-  const scaleY = (val) => h - pad - (val / max) * (h - pad * 2);
+  // Lienzo lógico
+  const w = 320, h = 80, pad = 8;
+  const maxY = Math.max(1, ...counts);
+  const stepX = (w - pad * 2) / Math.max(1, (daysInMonth - 1));
+  const axisY = h - pad;
 
+  const scaleY = (val) => {
+    const usable = h - pad * 2 - 14; // deja lugar a etiquetas arriba
+    return pad + (usable - (val / maxY) * usable);
+  };
+
+  // Línea
   const points = counts.map((c, i) => `${pad + i * stepX},${scaleY(c)}`).join(' ');
-  const dots = counts.map((c, i) => {
-    const x = pad + i * stepX;
-    const yb = scaleY(c);
-    return `<circle cx="${x}" cy="${yb}" r="1.5"></circle>`;
-  }).join('');
+
+  // Densidad de etiquetas (mostramos ~10 marcas)
+  const maxDayLabels = 10;
+  const tickEvery = Math.max(1, Math.ceil(daysInMonth / maxDayLabels));
+  // Si querés TODOS los días: const tickEvery = 1;
+
+  const circles = [];
+  const valueLabels = [];
+  const dayLabels = [];
+
+  for (let i = 0; i < daysInMonth; i++) {
+    const cx = pad + i * stepX;
+    const cy = scaleY(counts[i]);
+
+    // Punto
+    circles.push(`<circle cx="${cx}" cy="${cy}" r="2"></circle>`);
+
+    // Valor (solo si >0 y en marcas espaciadas)
+    if (counts[i] > 0 && (i % tickEvery === 0 || i === daysInMonth - 1)) {
+      valueLabels.push(`<text x="${cx}" y="${cy - 5}" class="spark-value" text-anchor="middle">${counts[i]}</text>`);
+    }
+
+    // Etiqueta de día en eje X
+    if (i % tickEvery === 0 || i === daysInMonth - 1) {
+      dayLabels.push(`<text x="${cx}" y="${axisY}" dy="12" class="spark-day" text-anchor="middle">${i + 1}</text>`);
+    }
+  }
 
   el.innerHTML = `
-    <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none">
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="80" preserveAspectRatio="none">
+      <!-- Eje X -->
+      <line x1="${pad}" y1="${axisY}" x2="${w - pad}" y2="${axisY}" class="spark-axis" />
+      ${dayLabels.join('')}
+
+      <!-- Línea -->
       <polyline fill="none" stroke="currentColor" stroke-width="1.5" points="${points}"></polyline>
-      ${dots}
+
+      <!-- Puntos -->
+      ${circles.join('')}
+
+      <!-- Valores -->
+      ${valueLabels.join('')}
     </svg>
   `;
 }
@@ -233,7 +264,7 @@ function renderTabla(data) {
   if (!data || data.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5">No hay datos disponibles</td></tr>`;
     updateKPIs([]);
-    actualizarContadores(state.allData); // contadores globales
+    actualizarContadores(state.allData); // para que los contadores sean globales
     return;
   }
   for (const fila of data) {
@@ -248,7 +279,7 @@ function renderTabla(data) {
     tbody.appendChild(tr);
   }
   updateKPIs(data);
-  actualizarContadores(state.allData); // si querés que siga la vista: pasar 'data'
+  actualizarContadores(state.allData); // si preferís que siga la vista: pasá 'data'
 }
 
 // -------- Fetch robusto --------
@@ -286,12 +317,10 @@ function applyFilters() {
   let data = state.allData.filter(r => {
     // texto libre
     const hitsText = !q || Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q));
-
     // fecha
     const d = parseDateFlexible(r.Fecha);
     const hitsFecha = (!dDesde || (d && d >= dDesde)) &&
                       (!dHasta || (d && d <= dHasta));
-
     // combos
     const hitsEsc = !escalaSel || String(r.Escala || "").toLowerCase() === escalaSel;
     const hitsMat = !matSel    || String(r.Matricula || "").toLowerCase() === matSel;
@@ -330,12 +359,11 @@ function buildSelectOptions() {
   if (fMatricula) fMatricula.innerHTML = toOptions(matSet);
 }
 
-// -------- Carga inicial --------
+// -------- Carga (con preservación de filtros/sort) --------
 async function cargarVuelos() {
   try {
     const raw = await fetchJSON(urlVuelos);
 
-    // si el endpoint devolvió {ok:false, error: "..."} mostralo
     if (raw && raw.ok === false) {
       console.error(raw.error);
       showAlert(`Error del servidor: ${raw.error}`, "error");
@@ -345,8 +373,18 @@ async function cargarVuelos() {
 
     const arr = coerceArray(raw);
     state.allData = arr.map(normalizeRow);
-    buildSelectOptions();
-    state.sort = { key: "Fecha", dir: -1 }; // default: fecha desc
+
+    // Construir selects solo 1 vez
+    if (!buildSelectOptions._done) {
+      buildSelectOptions();
+      buildSelectOptions._done = true;
+    }
+
+    // Sort por defecto solo si aún no fue definido
+    if (!state.sort.key) {
+      state.sort = { key: "Fecha", dir: -1 }; // más nuevo primero
+    }
+
     applyFilters();
   } catch (err) {
     console.error(err);
@@ -387,10 +425,12 @@ document.querySelectorAll("th").forEach(th => {
 });
 
 // Modo noche/día
-toggleBtn.addEventListener("click", () => {
-  bodyEl.classList.toggle("night");
-  toggleBtn.textContent = bodyEl.classList.contains("night") ? "Modo Día" : "Modo Noche";
-});
+if (toggleBtn) {
+  toggleBtn.addEventListener("click", () => {
+    bodyEl.classList.toggle("night");
+    toggleBtn.textContent = bodyEl.classList.contains("night") ? "Modo Día" : "Modo Noche";
+  });
+}
 
 // Usuarios activos (tolerante)
 function actualizarUsuarioActivo() {
@@ -409,11 +449,13 @@ function obtenerUsuariosActivos() {
     .catch(err => console.error(err));
 }
 
-// Boot
+// Boot + auto-refresh
 cargarVuelos();
 actualizarUsuarioActivo();
 obtenerUsuariosActivos();
 setInterval(() => {
-  actualizarUsuarioActivo();
-  obtenerUsuariosActivos();
-}, 10000);
+  cargarVuelos();             // refresca datos
+  actualizarUsuarioActivo();  // ping de presencia
+  obtenerUsuariosActivos();   // contador de usuarios
+}, AUTO_REFRESH_MS);
+```0
