@@ -1,89 +1,49 @@
-// ================== CONFIG ==================
-const urlVuelos   = "https://script.google.com/macros/s/AKfycbyHK1IUOfV6Sz3vJU_sa_yXfJLBrOAv-wHvHQDYnq-V7LTbkakaxuSfVGG0SaQYpvjz/exec";
-const urlUsuarios = "https://script.google.com/macros/s/AKfycbybR0vF4dXgcGwead3I725cwpY6sgxz101RHFUV7Ff39zMyOwJPlGbv9lGebgWK1-ho/exec";
+// URLs de tus Web Apps
+const urlVuelos = "https://script.google.com/macros/s/AKfycbyHK1IUOfV6Sz3vJU_sa_yXfJLBrOAv-wHvHQDYnq-V7LTbkakaxuSfVGG0SaQYpvjz/exec"; // Vuelos
+const urlUsuarios = "https://script.google.com/macros/s/AKfycbybR0vF4dXgcGwead3I725cwpY6sgxz101RHFUV7Ff39zMyOwJPlGbv9lGebgWK1-ho/exec"; // Usuarios activos
 
-// ================== STATE ==================
 let tablaData = [];
-const sessionId = '_' + Math.random().toString(36).slice(2, 11);
 
-// ================== DOM HELPERS ==================
-const $ = (sel) => document.querySelector(sel);
+// Generar SessionID único para el usuario
+const sessionId = '_' + Math.random().toString(36).substr(2, 9);
 
-// ================== SESIÓN ==================
-(function initSession(){
-  const raw = localStorage.getItem("usuarioActivo");
-  if (!raw) {
-    location.href = "../index.html";
-    return;
-  }
-  let usuario;
-  try { usuario = JSON.parse(raw); } catch { usuario = { email: raw }; }
-  const email = usuario.email || "-";
-  const legajo = usuario.legajo || "-";
-  const userEl = $("#usuarioInfo");
-  if (userEl) userEl.textContent = `Usuario: ${email} | Legajo: ${legajo}`;
-})();
-
-window.cerrarSesion = function(){
-  localStorage.removeItem("usuarioActivo");
-  location.href = "../index.html";
-};
-
-// ================== MODO NOCHE ==================
-(function initTheme(){
-  const saved = localStorage.getItem("theme"); // 'night' | 'day'
-  if (saved) document.body.classList.toggle("night", saved === "night");
-
-  const btn = $("#toggleMode");
-  if (btn) {
-    btn.addEventListener("click", () => {
-      const isNight = document.body.classList.toggle("night");
-      localStorage.setItem("theme", isNight ? "night" : "day");
-    });
-  }
-})();
-
-// ================== FECHAS ==================
-function parseFecha(s){
-  if (!s) return null;
-  const d = new Date(s);
-  return isNaN(d) ? null : d;
-}
-
-// ================== CONTADORES ==================
+// ---------------- Contadores de vuelos ----------------
 function actualizarContadores(){
-  const hoy  = new Date();
-  const mes  = hoy.getMonth();
+  const hoy = new Date();
+  const dia = hoy.toDateString();
+  const mes = hoy.getMonth();
   const anio = hoy.getFullYear();
 
   const vuelosHoy = tablaData.filter(f => {
-    const d = parseFecha(f.Fecha); return d && d.toDateString() === hoy.toDateString();
+    const fecha = new Date(f.Fecha);
+    return fecha.toDateString() === dia;
   }).length;
 
   const vuelosMes = tablaData.filter(f => {
-    const d = parseFecha(f.Fecha); return d && d.getMonth()===mes && d.getFullYear()===anio;
+    const fecha = new Date(f.Fecha);
+    return fecha.getMonth() === mes && fecha.getFullYear() === anio;
   }).length;
 
   const vuelosAnio = tablaData.filter(f => {
-    const d = parseFecha(f.Fecha); return d && d.getFullYear()===anio;
+    const fecha = new Date(f.Fecha);
+    return fecha.getFullYear() === anio;
   }).length;
 
-  const elDia  = $("#vuelosDia");
-  const elMes  = $("#vuelosMes");
-  const elAnio = $("#vuelosAnio");
+  document.getElementById("vuelosDia").textContent = `Vuelos hoy: ${vuelosHoy}`;
+  document.getElementById("vuelosMes").textContent = `Vuelos mes: ${vuelosMes}`;
+  document.getElementById("vuelosAnio").textContent = `Vuelos año: ${vuelosAnio}`;
 
-  if (elDia)  elDia.textContent  = `Vuelos hoy: ${vuelosHoy}`;
-  if (elMes)  elMes.textContent  = `Vuelos mes: ${vuelosMes}`;
-  if (elAnio) elAnio.textContent = `Vuelos año: ${vuelosAnio}`;
+  console.log("Contadores vuelos actualizados:", {vuelosHoy, vuelosMes, vuelosAnio});
 }
 
-// ================== FETCH ==================
+// ---------------- Obtener vuelos ----------------
 function obtenerVuelos(){
   fetch(urlVuelos)
-    .then(r => r.json())
+    .then(res => res.json())
     .then(data => {
-      if (Array.isArray(data)) {
+      if(Array.isArray(data)){
         tablaData = data.map(f => ({ Fecha: f.Fecha || "" }));
+        console.log("Datos de vuelos recibidos:", tablaData);
         actualizarContadores();
       } else {
         console.error("Formato de datos incorrecto:", data);
@@ -92,32 +52,35 @@ function obtenerVuelos(){
     .catch(err => console.error("Error fetch vuelos:", err));
 }
 
+// ---------------- Registrar usuario activo ----------------
 function actualizarUsuarioActivo(){
   fetch(urlUsuarios, {
     method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({ sessionId }),
+    body: JSON.stringify({sessionId}),
   }).catch(err => console.error("Error registrar usuario activo:", err));
 }
 
+// ---------------- Contador de usuarios activos ----------------
 function obtenerUsuariosActivos(){
-  const chip = $("#usuariosActivos");
-  if (!chip) return;
   fetch(urlUsuarios)
-    .then(r => r.json())
+    .then(res => res.json())
     .then(data => {
-      const n = (data && typeof data.activos !== "undefined") ? data.activos : "-";
-      chip.textContent = `Usuarios activos: ${n}`;
+      if(data.activos !== undefined){
+        document.getElementById("usuariosActivos").textContent = `Usuarios activos: ${data.activos}`;
+        console.log("Usuarios activos:", data.activos);
+      } else {
+        console.error("Formato incorrecto usuarios:", data);
+      }
     })
     .catch(err => console.error("Error fetch usuarios:", err));
 }
 
-// ================== BOOT ==================
-actualizarUsuarioActivo();
+// ---------------- Inicializar ----------------
+actualizarUsuarioActivo();  // Registrar al usuario
 obtenerUsuariosActivos();
 obtenerVuelos();
 
-// refresco cada 10s
+// ---------------- Actualizar cada 10 segundos ----------------
 setInterval(() => {
   actualizarUsuarioActivo();
   obtenerUsuariosActivos();
