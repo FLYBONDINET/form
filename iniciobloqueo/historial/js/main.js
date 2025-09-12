@@ -64,6 +64,9 @@ function normalizeRow(row){
   };
 }
 
+// Pequeño debounce
+function debounce(fn, ms=150){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; }
+
 // ================== CONTADORES ANIMADOS ==================
 const EASE_OUT_CUBIC = t => 1 - Math.pow(1 - t, 3);
 function animateNumber(el, to, { from, duration = 800, formatter } = {}) {
@@ -127,35 +130,71 @@ function updateKPIs(viewData){
   drawSparkline(viewData);
 }
 
-// Sparkline con días y valores por punto (mes actual)
+// ===== Sparkline responsivo con días y valores =====
 function drawSparkline(viewData){
-  const el=document.getElementById('kpiSparkline'); if(!el) return;
+  const host = document.getElementById('kpiSparkline');
+  if(!host) return;
+
+  // ancho real del contenedor + altura fija (coincide con CSS)
+  const rect = host.getBoundingClientRect();
+  const w = Math.max(560, Math.floor(rect.width || 560)); // mínimo 560px para que no se compacte
+  const h = 120;
+
   const now=new Date(), y=now.getFullYear(), m=now.getMonth();
   const daysInMonth=new Date(y,m+1,0).getDate();
   const counts=new Array(daysInMonth).fill(0);
-  for(const r of viewData){ const d=parseDateFlexible(r.Fecha); if(d && d.getFullYear()===y && d.getMonth()===m){ counts[d.getDate()-1]++; } }
-  const w=320,h=80,pad=6, max=Math.max(1,...counts);
-  const stepX=(w-pad*2)/Math.max(1,daysInMonth-1);
-  const scaleY=(v)=> h-pad - (v/max)*(h-pad*2);
-  const points=counts.map((c,i)=>`${pad+i*stepX},${scaleY(c)}`).join(' ');
-  let dots=""; let labelsDay=""; let labelsVal="";
+  for(const r of viewData){
+    const d=parseDateFlexible(r.Fecha);
+    if(d && d.getFullYear()===y && d.getMonth()===m) counts[d.getDate()-1]++;
+  }
+
+  const padL=18, padR=8, padT=10, padB=18;
+  const axisY = h - padB;
+  const max=Math.max(1, ...counts);
+  const stepX = (w - padL - padR) / Math.max(1, daysInMonth - 1);
+  const yScale = (v)=> axisY - (v/max)*(h - padT - padB);
+
+  const pts = counts.map((c,i)=>`${padL + i*stepX},${yScale(c)}`).join(' ');
+  let dots="", dayLabels="", valLabels="";
+
+  // Intervalo mínimo de 18px entre etiquetas de día
+  const minLabelGapPx = 18;
+  const dayStep = Math.max(1, Math.ceil(minLabelGapPx / stepX));
+
   for(let i=0;i<daysInMonth;i++){
-    const x=pad+i*stepX, yv=scaleY(counts[i]);
-    dots += `<circle cx="${x}" cy="${yv}" r="1.6"></circle>`;
-    if ((i+1)%5===0 || i===0 || i===daysInMonth-1) {
-      labelsDay += `<text class="spark-day" x="${x}" y="${h-2}" text-anchor="middle">${i+1}</text>`;
+    const x = padL + i*stepX;
+    const yv = yScale(counts[i]);
+
+    // puntos
+    dots += `<circle cx="${x}" cy="${yv}" r="2"></circle>`;
+
+    // días (1..N) cada "dayStep", más primero y último
+    if (i===0 || i===daysInMonth-1 || (i+1) % dayStep === 0) {
+      dayLabels += `<text class="spark-day" x="${x}" y="${h-4}" text-anchor="middle">${i+1}</text>`;
     }
-    if (counts[i]>0){
-      labelsVal += `<text class="spark-value" x="${x}" y="${Math.max(10,yv-6)}" text-anchor="middle">${counts[i]}</text>`;
+
+    // valores: siempre que haya >0; si hay poco espacio, solo en picos locales
+    const isPeak = counts[i] >= (counts[i-1]||0) && counts[i] >= (counts[i+1]||0);
+    if (counts[i] > 0 && (stepX >= 14 || isPeak)) {
+      const yText = Math.max(12, yv - 8);
+      valLabels += `<text class="spark-value" x="${x}" y="${yText}" text-anchor="middle">${counts[i]}</text>`;
     }
   }
-  el.innerHTML = `
+
+  host.innerHTML = `
     <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none">
-      <line class="spark-axis" x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}"></line>
-      <polyline fill="none" stroke="currentColor" stroke-width="1.5" points="${points}"></polyline>
-      ${dots}${labelsDay}${labelsVal}
-    </svg>`;
+      <line class="spark-axis" x1="${padL}" y1="${axisY}" x2="${w-padR}" y2="${axisY}"></line>
+      <polyline fill="none" stroke="currentColor" stroke-width="1.6" points="${pts}"></polyline>
+      ${dots}${dayLabels}${valLabels}
+    </svg>
+  `;
 }
+
+// Redibujar al cambiar tamaño de ventana
+window.addEventListener('resize', debounce(() => {
+  const view = state.filtered.length ? state.filtered : state.allData;
+  drawSparkline(view);
+}, 150));
 
 // ================== RENDER TABLA ==================
 function renderTabla(data){
