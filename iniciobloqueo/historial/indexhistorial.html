@@ -12,18 +12,26 @@
   <!-- Logo -->
   <img src="assets/logo.png" alt="Logo Flybondi" class="logo" />
 
-  <!-- Top bar #1 (volver) -->
-<button class="btn back" onclick="irAtras()">
-  <span class="material-icons">arrow_back</span>
-  Atrás
-</button>
+  <!-- Toolbar: Atrás + Modo + Cerrar sesión (misma fila) -->
+  <div class="toolbar">
+    <button class="btn back" onclick="irAtras()">
+      <span class="material-icons">arrow_back</span>
+      <span class="label">Atrás</span>
+    </button>
 
-  <!-- Top bar #2 (modo / sesión / contadores) -->
-  <div class="top-bar">
+    <div class="spacer"></div>
+
+    <!-- Dejo este con texto para que tu JS siga cambiando a “Modo Día/Noche” -->
     <button class="mode-btn" id="toggleMode">Modo Noche</button>
 
-    <button class="mode-btn" onclick="cerrarSesion()">Cerrar sesión</button>
+    <button class="btn danger" onclick="cerrarSesion()">
+      <span class="material-icons">logout</span>
+      <span class="label">Cerrar sesión</span>
+    </button>
+  </div>
 
+  <!-- Contadores (debajo de la toolbar) -->
+  <div class="top-bar">
     <div class="contadores" id="contadores">
       <div class="contador" id="vuelosDia">Vuelos hoy: 0</div>
       <div class="contador" id="vuelosMes">Vuelos este mes: 0</div>
